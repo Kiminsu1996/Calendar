@@ -1,0 +1,95 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    height: 100%;
+    overflow: hidden;
+}
+main{
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+label{
+    font-size: 15px;
+}
+a{
+    font-size: 15px;
+    text-decoration: none;
+    color: black;
+    padding-right: 10px;
+}
+input{
+    border-radius: 5px;
+    width: 160px;
+}
+
+h1{
+    font-size: 35px;
+}
+
+p{
+    font-size: 25px;
+}
+
+#formShare{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 20px;
+    width: 500px;
+    height: 500px;
+    box-shadow: inset 0 0 10px 5px rgba(0,0,0,0.5);
+    background-color: white;
+}
+
+#loginBtnDiv{
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    width: 250px;
+}
+#userAction{
+    margin-top: 20px;
+}
+
+#loginBtn{
+    height: 40px;
+    width: 200px;
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: white;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+#userDepartment{
+    width: 160px;
+    border-radius: 5px;
+}
+#userPosition{
+    width: 160px;
+    border-radius: 5px;
+}
+
+.btn{
+    height: 40px;
+    width: 100px;
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: white;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.user{
+    display: flex;
+    justify-content: space-between;
+    width: 250px;
+    padding: 10px;
+}
