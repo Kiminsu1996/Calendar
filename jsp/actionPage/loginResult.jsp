@@ -6,14 +6,51 @@
 <%@ page import="java.util.ArrayList"%>
 
 
+<% 
+request.setCharacterEncoding("UTF-8"); 
+String idValue=request.getParameter("id_value"); 
+String pwValue=request.getParameter("pw_value"); 
+ArrayList idxList = new ArrayList<String>();
+ArrayList idList = new ArrayList<String>();
+ArrayList pwList = new ArrayList<String>();
+
+if(!idValue.isEmpty() && !pwValue.isEmpty()){
+    Class.forName("com.mysql.jdbc.Driver"); 
+    Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234");
+
+    String sql ="SELECT * FROM users WHERE id=? AND password=?;"; 
+    PreparedStatement query = connect.prepareStatement(sql);   
+    query.setString(1,idValue); 
+    query.setString(2,pwValue); 
+    ResultSet result = query.executeQuery();
+
+    while(result.next()){
+        String userIdxData = result.getString(1);
+        String userIdData ="\"" + result.getString(2)+ "\"";     
+        String userPwData = "\"" + result.getString(3) + "\""; 
+        idxList.add(userIdxData);
+        idList.add(userIdData);
+        pwList.add(userPwData);
+        session.setAttribute("idx", userIdxData);
+        session.setAttribute("id", userIdData);
+    }
+}
+
+%>
+
 <script>
     
     function checkLogin(){
-        if(true){
+        var idValue = "<%=idValue%>"
+        var pwValue = "<%=pwValue%>"
+        var idList = <%=idList%>
+        var pwList = <%=pwList%>  
+
+        if(idValue == idList[0] && pwValue == pwList[0]){
             location.href = "../viewPage/main.jsp"
         }else{
             alert("아이디와 비밀번호를 다시 확인해 주세요.")
-            location.href="../login.jsp"
+            location.href="../../login.jsp"
         }
     }
     window.onload = function(){

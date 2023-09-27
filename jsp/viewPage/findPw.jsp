@@ -12,15 +12,15 @@
             <h1>비밀번호 찾기</h1>
             <div class="user id">
                 <label>아이디</label>
-                <input id="userId" type="text" placeholder="아이디를 입력해 주세요">
+                <input id="userId" type="text" name="id_value" placeholder="아이디를 입력해 주세요">
             </div>
             <div class="user name">
                 <label>이름</label>
-                <input id="userName" type="text" placeholder="이름을 입력해 주세요" maxlength="20">
+                <input id="userName" type="text" name="name_value" placeholder="이름을 입력해 주세요" maxlength="20">
             </div>
             <div class="user phone">
                 <label>전화번호</label>
-                <input id="userPhone" type="text" placeholder="전화번호를 입력해 주세요">
+                <input id="userPhone" type="text" name="phone_value" placeholder="전화번호를 입력해 주세요">
             </div>
             <div id="loginBtnDiv">
                 <button class="btn" type="button" onclick="goLoginPageEvent()">뒤로가기</button>
