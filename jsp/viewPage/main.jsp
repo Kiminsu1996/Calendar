@@ -220,7 +220,7 @@ while(userInfoResult.next()){
         // function makeContent(event){
         //     내가 선택한 날짜가 필요하고 //작성자의 idx가 필요함
 
-            
+        //
 
         //     var firstDiv = document.querySelector(".firstDiv")
         //     var infoBtn = document.createElement("button")
