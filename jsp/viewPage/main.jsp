@@ -9,23 +9,6 @@
 Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234"); 
 String idx = (String)session.getAttribute("idx");
 
-// 일정 내용, 시간을 찾는 쿼리문
-String myContentSql = "SELECT * FROM events WHERE users_idx=?;";
-PreparedStatement myContentQuery = connect.prepareStatement(myContentSql);
-myContentQuery.setString(1,idx);
-ResultSet myContentSqlResult = myContentQuery.executeQuery();
-
-ArrayList eventInfo = new ArrayList<String>();
-
-while(myContentSqlResult.next()){
-    String userContentData = "\"" + myContentSqlResult.getString(3) + "\""; 
-    String dateData = "\"" + myContentSqlResult.getString(4) + "\""; 
-    String timeData= "\"" + myContentSqlResult.getString(5) + "\""; 
-    eventInfo.add(userContentData);
-    eventInfo.add(dateData);
-    eventInfo.add(timeData);
-}
-
 // 회원의 이름을 찾는 쿼리문
 String userInfoSql = "SELECT * FROM users WHERE idx=?;";
 PreparedStatement userInfoQuery = connect.prepareStatement(userInfoSql);
@@ -34,10 +17,37 @@ ResultSet userInfoResult = userInfoQuery.executeQuery();
 
 ArrayList userInfo = new ArrayList<String>();
 
+
 while(userInfoResult.next()){
     String userNameData = "\"" + userInfoResult.getString(4) + "\""; 
     userInfo.add(userNameData);
 }
+
+// 일정 내용, 시간을 찾는 쿼리문
+String myContentSql = "SELECT * FROM events WHERE users_idx=?;";
+PreparedStatement myContentQuery = connect.prepareStatement(myContentSql);
+myContentQuery.setString(1,idx);
+ResultSet myContentSqlResult = myContentQuery.executeQuery();
+
+ArrayList eventInfo = new ArrayList<String>();
+ArrayList dateEvent = new ArrayList<String>();
+ArrayList timeEvent = new ArrayList<String>();
+ArrayList contentEvnet = new ArrayList<String>();
+
+while(myContentSqlResult.next()){
+        String userContentData = "\"" + myContentSqlResult.getString(3) + "\""; 
+        String dateData = "\"" + myContentSqlResult.getString(4)+ "\""; 
+        String timeData= "\"" + myContentSqlResult.getString(5) + "\""; 
+        String modifyDateDate = dateData.substring(5);
+
+        dateEvent.add(userContentData);
+        contentEvnet.add(dateData);
+        timeEvent.add(timeData);
+
+        eventInfo.add(dateEvent);
+        eventInfo.add(contentEvnet);
+        eventInfo.add(timeEvent);
+    }
 
 %>
 
@@ -92,7 +102,7 @@ while(userInfoResult.next()){
 
     <script>
         var nowDate = new Date();
-    
+        
         function checkLogin(){
             var idx = <%=idx%>
             if(idx < 1){
@@ -113,6 +123,7 @@ while(userInfoResult.next()){
         //         }
         //     }
         // }
+        //
 
         //캘린더 박스를 생성하는 함수
         function createDayBox() {
@@ -125,6 +136,10 @@ while(userInfoResult.next()){
             for (var i = 0; i < columns * rows; i++) {
                 var firstDiv = document.createElement("div")
                 var date = i + 1
+                var year = nowDate.getFullYear()
+                var formattedMonth = (nowDate.getMonth() + 1 < 10 ? "0" : "") + (nowDate.getMonth() + 1);
+                var formattedDate = (date < 10 ? "0" : "") + date;
+
                 firstDiv.className ="firstDiv"
                 firstDiv.style.width = widthValue
                 firstDiv.style.height = heightValue
@@ -134,20 +149,18 @@ while(userInfoResult.next()){
                 firstDiv.style.justifyContent ="space-between"
                 firstDiv.style.alignItems ="center"
                 firstDiv.style.backgroundColor = "#8FAADC"
-                firstDiv.setAttribute("data-day",date)
+                firstDiv.setAttribute("data-date",year + "-" + formattedMonth + "-" + formattedDate)
                 
                 if (date <= getDatesInMonth(nowDate.getFullYear(), nowDate.getMonth() + 1)) {
-                    var dateTextBtn = document.createElement("button")
-                    var formattedMonth = (nowDate.getMonth() + 1 < 10 ? "0" : "") + (nowDate.getMonth() + 1);
-                    var formattedDate = (date < 10 ? "0" : "") + date;
-
-                    dateTextBtn.innerHTML = date
-                    dateTextBtn.className = "dateTextBtn"
-                    dateTextBtn.setAttribute("data-month",nowDate.getMonth()+1)
-                    dateTextBtn.setAttribute("data-day",date)
-                    dateTextBtn.setAttribute("data-date",formattedMonth + "-" + formattedDate)
-                    dateTextBtn.addEventListener("click",showModalEvent);
-                    firstDiv.appendChild(dateTextBtn)
+                    var dateBtn = document.createElement("button")
+                    
+                    dateBtn.innerHTML = date
+                    dateBtn.className = "dateBtn"
+                    dateBtn.setAttribute("data-month",nowDate.getMonth()+1)
+                    dateBtn.setAttribute("data-day",date)
+                    dateBtn.setAttribute("data-date",formattedMonth + "-" + formattedDate)
+                    dateBtn.addEventListener("click",openModalEvent)
+                    firstDiv.appendChild(dateBtn)
                 }
                 
                 day.appendChild(firstDiv)
@@ -175,12 +188,12 @@ while(userInfoResult.next()){
         // 일자 업데이트
         function updateCalendar() {
             var day = document.getElementById("day")
-            day.innerHTML = ""; 
-            createDayBox();
+            day.innerHTML = ""
+            createDayBox()
         }
 
         //모달창 열기
-        function openModal(month,day) {
+        function showModal(month,day) {
             var modal = document.getElementById("myModal")
             var modalDate = document.getElementById("modalDate")
             var content = document.getElementById("content")
@@ -197,8 +210,8 @@ while(userInfoResult.next()){
 
             var modalDates = document.getElementById("modalDates")
             var year = nowDate.getFullYear()
-            var formattedDate = year + "-" + (month < 10 ? "0" : "") + month + "-" + (day < 10 ? "0" : "") + day;
-            modalDates.value = formattedDate;
+            var formattedDate = year + "-" + (month < 10 ? "0" : "") + month + "-" + (day < 10 ? "0" : "") + day
+            modalDates.value = formattedDate
         }
 
         // 모달 창 닫기
@@ -207,46 +220,61 @@ while(userInfoResult.next()){
             modal.style.display = "none"
         }
 
-
-        //모달창에 클릭한 날짜를 찾는 함수
-        function showModalEvent(event) {
-            var clickedDate = event.target.getAttribute("data-day");
-            var clickedMonth = event.target.getAttribute("data-month");
-    
-            openModal(clickedMonth,clickedDate);
-        }
-        
-        //일정을 캘린더에 보여주는 함수
-        // function makeContent(event){
-        //     내가 선택한 날짜가 필요하고 //작성자의 idx가 필요함
-
-        //
-
-        //     var firstDiv = document.querySelector(".firstDiv")
-        //     var infoBtn = document.createElement("button")
-        //     var nameDiv = document.createElement("div")
-        //     var timeDiv = document.createElement("div")
-        //     var contentDiv = document.createElement("div")
-        //     var userName = <%=userInfo%>
-        //     var eventInfo = <%=eventInfo%>
-
-                
-        //     infoBtn.id = "infoBtn"
-        //     nameDiv.innerHTML = userName
-        //     contentDiv.innerHTML = eventInfo[0]
-        //     timeDiv.innerHTML = eventInfo[2]
-
-        //     infoBtn.append(nameDiv,timeDiv,contentDiv)
-        //     firstDiv.appendChild(infoBtn)
-            
-        // }
-
+        //모달창에 빈값 확인 
         function checkEmpty(){
             var saveModalBtn = document.getElementById("saveModalBtn")
             saveModalBtn.addEventListener("click",saveModalBtnEvent)
         }
 
-        //일정 저장 이벤트
+         //일정을 캘린더에 보여주는 함수
+         function showContent(){
+            var firstDivs = document.querySelectorAll(".firstDiv")
+            
+            for (var i = 0; i < firstDivs.length; i++) {
+                var firstDivDate = firstDivs[i].getAttribute("data-date")
+                var eventInfo = <%=eventInfo%>
+                var userInfo =<%=userInfo%>
+
+                for(var j = 0; j < eventInfo[1].length; j++){
+        
+                    if(firstDivDate === eventInfo[1][j]){
+                        var firstDiv = firstDivs[i]
+                        var eventContent = eventInfo[0][j]
+                        var eventTime = eventInfo[2][j]
+                        var processEventTime =eventTime.split(":",2)
+                        
+                        console.log(firstDiv.childElementCount)
+                        console.log(firstDivDate)
+
+                        // if (firstDiv.childElementCount <= 2) {} << 이조건으로 만들어야하는데...... 다시 찾아보고 공부해보기 / 조건: 자식이 2개 이상이면 
+                            var infoBtn = document.createElement("button")
+                            var nameDiv = document.createElement("div")
+                            var timeDiv = document.createElement("div")
+                            var contentDiv = document.createElement("div")
+                            var userName = userInfo[0]
+                            
+                            infoBtn.id = "infoBtn"
+                            nameDiv.innerHTML = userName
+                            contentDiv.innerHTML = eventContent
+                            timeDiv.innerHTML = processEventTime[0] + ":" + processEventTime[1]
+
+                            infoBtn.append(nameDiv, timeDiv, contentDiv)
+                            firstDiv.appendChild(infoBtn) 
+                    }
+                } 
+            }
+        }
+
+
+        //모달창에 월, 일을 찾는 이벤트
+        function openModalEvent(event) { 
+            var clickedDate = event.target.getAttribute("data-day")
+            var clickedMonth = event.target.getAttribute("data-month")
+    
+            showModal(clickedMonth,clickedDate)
+        }
+        
+        //모달창 내용을 저장하는 이벤트
         function saveModalBtnEvent(e){
             var content = document.getElementById("content")
             var time = document.getElementById("time")
@@ -270,7 +298,10 @@ while(userInfoResult.next()){
             createDayBox()
             updateYearMonth(nowDate.getFullYear(), nowDate.getMonth() + 1)
             checkEmpty()
-           
+            showContent()
         }
+       
     </script>
 </body>
+
+
