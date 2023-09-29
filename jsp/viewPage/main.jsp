@@ -85,7 +85,7 @@ while(myContentSqlResult.next()){
     <form id="myModal" action="makeContentResult.jsp">
         <div id="modalHeader">
             <p id="modalDate"></p>
-            <button id="modalCloseBtn" type="button" onclick="closeModal()">X</button>
+            <button class="modalCloseBtn" type="button" onclick="closeModalEvent()">X</button>
         </div>
 
         <div class="modal content">
@@ -100,8 +100,13 @@ while(myContentSqlResult.next()){
         <button id="saveModalBtn" type="submit">저장</button>
     </form>
 
+    <div id="contentDetailModal">
+        <button class="modalCloseBtn" type="button" onclick="detailMoadCloseEvent()">X</button>
+    </div>
+
     <script>
         var nowDate = new Date();
+        var eventData = {};
         
         function checkLogin(){
             var idx = <%=idx%>
@@ -172,6 +177,7 @@ while(myContentSqlResult.next()){
             nowDate.setMonth(nowDate.getMonth() + month)
             updateYearMonth(nowDate.getFullYear(), nowDate.getMonth() + 1)
             updateCalendar()
+            showContent(nowDate.getFullYear(), nowDate.getMonth() + 1)
         }
 
         // 해당 월의 일 수를 가져오는 함수
@@ -214,63 +220,114 @@ while(myContentSqlResult.next()){
             modalDates.value = formattedDate
         }
 
-        // 모달 창 닫기
-        function closeModal() {
-            var modal = document.getElementById("myModal")
-            modal.style.display = "none"
-        }
-
         //모달창에 빈값 확인 
         function checkEmpty(){
             var saveModalBtn = document.getElementById("saveModalBtn")
             saveModalBtn.addEventListener("click",saveModalBtnEvent)
         }
 
-         //일정을 캘린더에 보여주는 함수
-         function showContent(){
-            var firstDivs = document.querySelectorAll(".firstDiv")
-            
-            for (var i = 0; i < firstDivs.length; i++) {
-                var firstDivDate = firstDivs[i].getAttribute("data-date")
-                var eventInfo = <%=eventInfo%>
-                var userInfo =<%=userInfo%>
+         //일정을 캘린더에 보여주는 함수/
+         function showContent(year, month) {
+            var firstDivs = document.querySelectorAll(".firstDiv") // 모든 firstDiv를 선택
+            var eventInfo = <%=eventInfo%>
+            var userInfo = <%=userInfo%>
 
-                for(var j = 0; j < eventInfo[1].length; j++){
-        
-                    if(firstDivDate === eventInfo[1][j]){
-                        var firstDiv = firstDivs[i]
+            for (var i = 0; i < firstDivs.length; i++) {
+                var firstDivDate = firstDivs[i].getAttribute("data-date") // firstDiv[i]들을 data-date를 가져온다.
+              
+                // 해당 날짜에 대한 일정 정보를 저장할 배열
+                var eventsOnDate = []
+
+                for (var j = 0; j < eventInfo[1].length; j++) {
+                    if (firstDivDate === eventInfo[1][j]) {
                         var eventContent = eventInfo[0][j]
                         var eventTime = eventInfo[2][j]
-                        var processEventTime =eventTime.split(":",2)
-                        
-                        console.log(firstDiv.childElementCount)
-                        console.log(firstDivDate)
+                        var processEventTime = eventTime.split(":", 2)
 
-                        // if (firstDiv.childElementCount <= 2) {} << 이조건으로 만들어야하는데...... 다시 찾아보고 공부해보기 / 조건: 자식이 2개 이상이면 
-                            var infoBtn = document.createElement("button")
-                            var nameDiv = document.createElement("div")
-                            var timeDiv = document.createElement("div")
-                            var contentDiv = document.createElement("div")
-                            var userName = userInfo[0]
-                            
-                            infoBtn.id = "infoBtn"
-                            nameDiv.innerHTML = userName
-                            contentDiv.innerHTML = eventContent
-                            timeDiv.innerHTML = processEventTime[0] + ":" + processEventTime[1]
+                        // 해당 날짜에 대한 일정 정보를 객체로 저장
+                        var eventInfoObj = {
+                            content: eventContent,
+                            time: processEventTime[0] + ":" + processEventTime[1]
+                        }
 
-                            infoBtn.append(nameDiv, timeDiv, contentDiv)
-                            firstDiv.appendChild(infoBtn) 
+                        eventsOnDate.push(eventInfoObj)
                     }
-                } 
+                }
+                // 해당 날짜에 일정이 있다면 표시
+                if (eventsOnDate.length > 0) {
+                    var firstDiv = firstDivs[i]
+
+                    if (eventsOnDate.length > 1) {
+                    // 여러 개의 일정이 있을 경우 일정 개수 표시
+                        var infoBtn = document.createElement("button")
+                        infoBtn.className = "infoBtn"
+                        infoBtn.innerHTML = eventsOnDate.length
+                        firstDiv.appendChild(infoBtn)
+                    } else {
+                    // 한 개의 일정만 있을 경우 일정 정보 표시
+                        var eventInfoObj = eventsOnDate[0]
+                        var eventContent = eventInfoObj.content
+                        var eventTime = eventInfoObj.time
+
+                        var infoBtn = document.createElement("button")
+                        var nameDiv = document.createElement("div")
+                        var timeDiv = document.createElement("div")
+                        var contentDiv = document.createElement("div")
+                        var userName = userInfo[0]
+
+                        infoBtn.className = "infoBtn"
+                        nameDiv.innerHTML = userName
+                        contentDiv.innerHTML = eventContent
+                        timeDiv.innerHTML = eventTime
+
+                        infoBtn.append(nameDiv, timeDiv, contentDiv)
+                        firstDiv.appendChild(infoBtn)
+                    }
+                    infoBtn.addEventListener("click",openContentDetailEvent)
+                }
             }
         }
 
+        function openContentDetailEvent(){
+            var contentDetailModal = document.getElementById("contentDetailModal")
+            contentDetailModal.style.display = "flex"
+            contentDetailModal.style.justifyContent = "center"
+            contentDetailModal.style.alignItems = "center"
+            contentDetailModal.style.flexDirection = "column"
+
+            for(){
+                var contentDetails = document.createElement("div")
+                contentDetails.id ="contentDetails"
+
+
+                var content = document.createElement("div")
+
+                var modifyContentBtn = document.createElement("button")
+                modifyContentBtn.innerHTML="수정"
+
+                var deleteContentBtn = document.createElement("button")
+                deleteContentBtn.innerHTML = "삭제"
+            
+                contentDetails.append(content,modifyContentBtn,deleteContentBtn)
+                contentDetailModal.appendChild(contentDetails)
+            }
+        }
+       
+        function detailMoadCloseEvent(){
+            var contentDetailModal = document.getElementById("contentDetailModal")
+            contentDetailModal.style.display ="none"
+        }
+
+         // 모달 창 닫기 이벤트
+         function closeModalEvent() {
+            var modal = document.getElementById("myModal")
+            modal.style.display = "none"
+        }
 
         //모달창에 월, 일을 찾는 이벤트
         function openModalEvent(event) { 
             var clickedDate = event.target.getAttribute("data-day")
             var clickedMonth = event.target.getAttribute("data-month")
-    
             showModal(clickedMonth,clickedDate)
         }
         
