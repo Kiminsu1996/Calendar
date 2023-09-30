@@ -68,7 +68,7 @@ while(myContentSqlResult.next()){
 
             <div id="headerRight">
                 <button class="user logout" onclick="logoutEvent()">로그아웃</button>
-                <button class="user info">개인정보 보기</button>
+                <button class="user info" onclick="">개인정보 보기</button>
             </div>
         </div>
     </header>
@@ -101,13 +101,16 @@ while(myContentSqlResult.next()){
     </form>
 
     <div id="contentDetailModal">
-        <button class="modalCloseBtn" type="button" onclick="detailMoadCloseEvent()">X</button>
+        <div id="detailModalHeader">
+        <p id="detailModalDate"></p>
+        <button class="modalCloseBtn" id="detailModalHeaderCloseBtn" type="button" onclick="detailMoadCloseEvent()">X</button>
+        </div>
     </div>
 
     <script>
-        var nowDate = new Date();
-        var eventData = {};
-        
+        var nowDate = new Date()
+        var detailModalDates = null
+
         function checkLogin(){
             var idx = <%=idx%>
             if(idx < 1){
@@ -155,6 +158,8 @@ while(myContentSqlResult.next()){
                 firstDiv.style.alignItems ="center"
                 firstDiv.style.backgroundColor = "#8FAADC"
                 firstDiv.setAttribute("data-date",year + "-" + formattedMonth + "-" + formattedDate)
+                firstDiv.setAttribute("data-month",formattedMonth)
+                firstDiv.setAttribute("data-day",formattedDate)
                 
                 if (date <= getDatesInMonth(nowDate.getFullYear(), nowDate.getMonth() + 1)) {
                     var dateBtn = document.createElement("button")
@@ -163,7 +168,6 @@ while(myContentSqlResult.next()){
                     dateBtn.className = "dateBtn"
                     dateBtn.setAttribute("data-month",nowDate.getMonth()+1)
                     dateBtn.setAttribute("data-day",date)
-                    dateBtn.setAttribute("data-date",formattedMonth + "-" + formattedDate)
                     dateBtn.addEventListener("click",openModalEvent)
                     firstDiv.appendChild(dateBtn)
                 }
@@ -226,22 +230,24 @@ while(myContentSqlResult.next()){
             saveModalBtn.addEventListener("click",saveModalBtnEvent)
         }
 
-         //일정을 캘린더에 보여주는 함수/
+         //일정을 캘린더에 보여주는 함수
          function showContent(year, month) {
             var firstDivs = document.querySelectorAll(".firstDiv") // 모든 firstDiv를 선택
             var eventInfo = <%=eventInfo%>
             var userInfo = <%=userInfo%>
 
             for (var i = 0; i < firstDivs.length; i++) {
-                var firstDivDate = firstDivs[i].getAttribute("data-date") // firstDiv[i]들을 data-date를 가져온다.
+                var firstDivDate = firstDivs[i].getAttribute("data-date") 
+                var firstDivMonth = firstDivs[i].getAttribute("data-month") 
+                var firstDivDay = firstDivs[i].getAttribute("data-day") 
               
                 // 해당 날짜에 대한 일정 정보를 저장할 배열
                 var eventsOnDate = []
 
                 for (var j = 0; j < eventInfo[1].length; j++) {
                     if (firstDivDate === eventInfo[1][j]) {
-                        var eventContent = eventInfo[0][j]
-                        var eventTime = eventInfo[2][j]
+                        var eventContent = eventInfo[0][j] //내용
+                        var eventTime = eventInfo[2][j] // 시간
                         var processEventTime = eventTime.split(":", 2)
 
                         // 해당 날짜에 대한 일정 정보를 객체로 저장
@@ -253,65 +259,103 @@ while(myContentSqlResult.next()){
                         eventsOnDate.push(eventInfoObj)
                     }
                 }
-                // 해당 날짜에 일정이 있다면 표시
+                //일정이 있다면 모두 표시
                 if (eventsOnDate.length > 0) {
                     var firstDiv = firstDivs[i]
+                    var infoBtn = document.createElement("button")
+                    infoBtn.className = "infoBtn"
+                    infoBtn.setAttribute("data-month", firstDivMonth)
+                    infoBtn.setAttribute("data-day", firstDivDay)
 
-                    if (eventsOnDate.length > 1) {
                     // 여러 개의 일정이 있을 경우 일정 개수 표시
-                        var infoBtn = document.createElement("button")
-                        infoBtn.className = "infoBtn"
+                    if (eventsOnDate.length > 1) {
                         infoBtn.innerHTML = eventsOnDate.length
                         firstDiv.appendChild(infoBtn)
-                    } else {
-                    // 한 개의 일정만 있을 경우 일정 정보 표시
+                        
+                     // 한 개의 일정만 있을 경우 일정 정보 표시
+                    } else { 
                         var eventInfoObj = eventsOnDate[0]
                         var eventContent = eventInfoObj.content
                         var eventTime = eventInfoObj.time
-
-                        var infoBtn = document.createElement("button")
-                        var nameDiv = document.createElement("div")
-                        var timeDiv = document.createElement("div")
-                        var contentDiv = document.createElement("div")
                         var userName = userInfo[0]
-
-                        infoBtn.className = "infoBtn"
+                        var nameDiv = document.createElement("div")
+                        var contentDiv = document.createElement("div")
+                        var timeDiv = document.createElement("div")
+                        
                         nameDiv.innerHTML = userName
                         contentDiv.innerHTML = eventContent
                         timeDiv.innerHTML = eventTime
-
+                        
                         infoBtn.append(nameDiv, timeDiv, contentDiv)
-                        firstDiv.appendChild(infoBtn)
                     }
-                    infoBtn.addEventListener("click",openContentDetailEvent)
+                    
+                    firstDiv.appendChild(infoBtn)
+                    infoBtn.addEventListener("click", infoBtnClickEvent)
                 }
             }
         }
 
-        function openContentDetailEvent(){
+        function infoBtnClickEvent(event) {
+            var eventInfo = <%=eventInfo%>;
+            var userInfo = <%=userInfo%>;
+            var infoBtnMonth = event.target.getAttribute("data-month")
+            var infoBtnDay = event.target.getAttribute("data-day")
+
+    
             var contentDetailModal = document.getElementById("contentDetailModal")
             contentDetailModal.style.display = "flex"
             contentDetailModal.style.justifyContent = "center"
             contentDetailModal.style.alignItems = "center"
             contentDetailModal.style.flexDirection = "column"
 
-            for(){
-                var contentDetails = document.createElement("div")
-                contentDetails.id ="contentDetails"
+            var detailModalHeader = document.getElementById("detailModalHeader")
+    
+            var detailModalDate = document.getElementById("detailModalDate")
+            detailModalDate.innerHTML = infoBtnMonth + "월 " + infoBtnDay + '일'
 
-
-                var content = document.createElement("div")
-
-                var modifyContentBtn = document.createElement("button")
-                modifyContentBtn.innerHTML="수정"
-
-                var deleteContentBtn = document.createElement("button")
-                deleteContentBtn.innerHTML = "삭제"
+            var modalCloseBtn = document.getElementById("detailModalHeaderCloseBtn")
             
-                contentDetails.append(content,modifyContentBtn,deleteContentBtn)
-                contentDetailModal.appendChild(contentDetails)
+    
+            var contentDetails = document.createElement("div")
+            contentDetails.id = "contentDetails"
+
+            for (var i = 0; i < eventInfo[1].length; i++) {
+        
+                if (eventInfo[1][i] === nowDate.getFullYear() + '-' + infoBtnMonth + '-' + infoBtnDay) {
+                    var eventTime = eventInfo[2][i]; //시간
+                    var userName = userInfo[0]; //이름
+                    var eventContent = eventInfo[0][i]; //내용
+                    var processEventTime = eventTime.split(":", 2) // 시간 데이터 가공
+           
+                    var eventElements = document.createElement("div")
+                    eventElements.className = "eventElements"
+                    
+                    var eventInfos = document.createElement("div")
+                    eventInfos.id="eventInfos"
+                    eventInfos.innerHTML = processEventTime[0]+ ":" +processEventTime[1] + " " + userName + " " + eventContent;
+
+                    var modifyContentBtn = document.createElement("button")
+                    modifyContentBtn.innerHTML = "수정"
+                    modifyContentBtn.className = "detailModalBtn"
+
+                    var deleteContentBtn = document.createElement("button")
+                    deleteContentBtn.innerHTML = "삭제"
+                    deleteContentBtn.className = "detailModalBtn"
+
+                    var btnDiv = document.createElement("div")
+                   btnDiv.id = "btnDiv"
+
+                    btnDiv.append(modifyContentBtn,deleteContentBtn)
+                    eventElements.append(eventInfos,btnDiv)
+                    contentDetails.appendChild(eventElements)
+                }
             }
+
+            contentDetailModal.innerHTML = ''
+            detailModalHeader.append(detailModalDate,modalCloseBtn)
+            contentDetailModal.append(detailModalHeader,contentDetails)
         }
+        
        
         function detailMoadCloseEvent(){
             var contentDetailModal = document.getElementById("contentDetailModal")
@@ -344,6 +388,7 @@ while(myContentSqlResult.next()){
                 alert("빈칸 없이 다 적어주세요.")
             }
         }
+
 
         //로그아웃 이벤트
         function logoutEvent(){

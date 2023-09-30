@@ -99,8 +99,14 @@ p{
     width: 50%;
     display: flex;
     justify-content: center;
+    
 }
 #modalDate{
+    font-size: 35px;
+    margin-bottom: 10%;
+}
+
+#detailModalDate{
     font-size: 35px;
     margin-bottom: 10%;
 }
@@ -120,6 +126,19 @@ p{
     flex-direction: column;
     width: 100%;
 }
+
+#eventInfos{
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 2%  3%  2%  3%
+}
+
+#contentDetails{
+    width: 90%;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
 .infoBtn{
     width: 100%;
     height: 50%;
@@ -179,3 +198,19 @@ p{
     height: 30px;
 }
 
+.eventElements{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 5%;
+}
+
+.detailModalBtn{
+    width: 50px;
+    height: 40px;
+    background-color: transparent;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-right: 5px;
+   
+}
