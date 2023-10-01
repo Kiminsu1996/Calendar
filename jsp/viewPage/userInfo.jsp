@@ -1,4 +1,42 @@
 <%@ page language ="java" contentType="text/html" pageEncoding="UTF-8" %>
+<%@ page import = "java.sql.DriverManager"%>
+<%@ page import = "java.sql.Connection"%>
+<%@ page import="java.sql.PreparedStatement"%>
+<%@ page import="java.sql.ResultSet"%>
+<%@ page import="java.util.ArrayList"%>
+
+<% 
+ArrayList idxList = new ArrayList<String>();
+String idx = (String)session.getAttribute("idx");
+
+if(idx != null){
+    Class.forName("com.mysql.jdbc.Driver");
+    Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234"); 
+
+    String sql ="SELECT * FROM users WHERE idx=?;"; 
+    PreparedStatement query = connect.prepareStatement(sql); 
+    query.setString(1, idx); 
+    ResultSet result = query.executeQuery(); 
+
+    while(result.next()){
+        String idData ="\"" + result.getString(2)+ "\"";
+        String pwData = "\"" +  result.getString(3) + "\"";
+        String nameData = "\"" +  result.getString(4) + "\"";
+        String departmentData = "\"" +  result.getString(5)+ "\"";
+        String positionData = "\"" +  result.getString(6)+ "\"";
+        String phonenumberData = "\"" +  result.getString(7)+ "\"";
+        idxList.add(idData);
+        idxList.add(pwData);
+        idxList.add(nameData);
+        idxList.add(departmentData);
+        idxList.add(positionData);
+        idxList.add(phonenumberData);
+    }
+}else{
+    response.sendRedirect("../../login.jsp");
+}
+
+%>
 
 <head>
     <meta charset="UTF-8">
@@ -8,8 +46,8 @@
 </head>
 <body>
     <main>
-        <form id="formShare" action="../actionPage/singupResult.jsp">
-            <h1>회원가입</h1>
+        <form id="formShare" action="../actionPage/changeUserInfo.jsp">
+            <h1>개인정보 보기</h1>
 
             <div class="user id">
                 <label>아이디</label>
@@ -18,7 +56,7 @@
 
             <div class="user pw">
                 <label>비밀번호</label>
-                <input id="userPw" type="password" placeholder="5~20글자 사이의 PW입력" name="pw_value" />
+                <input id="userPw" type="text" placeholder="5~20글자 사이의 PW입력" name="pw_value" />
             </div>
 
             <div class="user name">
@@ -51,18 +89,35 @@
             </div>
         
             <div id="loginBtnDiv">
-                <button class="btn" type="button" onclick="goLoginPageEvent()">뒤로가기</button>
-                <button class="emptyCheck btn " type="submit">확인</button>
+                <button class="btn" type="button" onclick="goMainPageEvent()">뒤로가기</button>
+                <button class="emptyCheck btn " type="submit">수정</button>
+                <button class="btn" type="button" onclick="deleteUserEvent()">탈퇴</button>
             </div>
         </form>
     </main>
     <script>
-        function checkEmpty(){
-            var checkPwBtn = document.querySelector(".emptyCheck")
-            checkPwBtn.addEventListener("click",checkSingupEvent)
+
+        function showUserInfo(){
+            var idxList = <%=idxList%>;
+            var userInfos = ["userId", "userPw", "userName", "userDepartment", "userPosition", "userPhone"];
+
+            for (var i = 0; i < userInfos.length; i++) {
+                var userInfo = userInfos[i];
+                var dataBaseValue = idxList[i];
+                var inputUserInfo = document.getElementById(userInfo);
+
+                if (inputUserInfo) {
+                    inputUserInfo.value = dataBaseValue;
+                }
+            }
         }
 
-        function checkSingupEvent(e){
+        function checkEmpty(){
+            var checkPwBtn = document.querySelector(".emptyCheck")
+            checkPwBtn.addEventListener("click",checkUserInfoEvent)
+        }
+
+        function checkUserInfoEvent(e){
             var userId = document.getElementById("userId")
             var userPw = document.getElementById("userPw")
             var userName = document.getElementById("userName")
@@ -88,12 +143,24 @@
             }
         }
 
-        function goLoginPageEvent(){
-            location.href="../../login.jsp"
+        function goMainPageEvent(){
+            location.href="main.jsp"
+        }
+
+        function deleteUserEvent(){
+            if(confirm("정말 탈퇴 하시겠습니까?")){
+                location.href ="../actionPage/deleteInfo.jsp"
+            }
+            else{
+                location.href ="../viewPage/main.jsp"
+            }
         }
 
         window.onload = function(){
+            showUserInfo()
             checkEmpty()
         }
+
+
     </script>
 </body>

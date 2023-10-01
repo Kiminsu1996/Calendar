@@ -28,11 +28,13 @@ if(!idValue.isEmpty() && !pwValue.isEmpty()){
         String userIdxData = result.getString(1);
         String userIdData ="\"" + result.getString(2)+ "\"";     
         String userPwData = "\"" + result.getString(3) + "\""; 
+        String userDepartmentData = result.getString(5); 
         idxList.add(userIdxData);
         idList.add(userIdData);
         pwList.add(userPwData);
         session.setAttribute("idx", userIdxData);
         session.setAttribute("id", userIdData);
+        session.setAttribute("department", userDepartmentData);
     }
 }
 
