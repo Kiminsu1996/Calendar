@@ -90,6 +90,6 @@ p{
 .user{
     display: flex;
     justify-content: space-between;
-    width: 250px;
+    width: 300px;
     padding: 10px;
 }

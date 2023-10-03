@@ -27,10 +27,11 @@ if(!contentValue.isEmpty() && !timeValue.isEmpty() && !dateValue.isEmpty()){
     query.setString(4,timeValue);
     query.executeUpdate();
 }
-
+// 예외처리 추가로 할 것  = 정규표현식 + 길이 + 자료형까지 체크하기 
 %>
 
 <script>
+    //프론트에서 보여주는게 있어야한다. 빈값일 때 그냥 로그인 페이지로 넘어가니깐
     location.href="../viewPage/main.jsp"
 </script>
 

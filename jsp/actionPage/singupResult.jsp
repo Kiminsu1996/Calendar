@@ -15,7 +15,8 @@ String departmentValue=request.getParameter("department_value");
 String positionValue=request.getParameter("position_value"); 
 String phoneValue=request.getParameter("phone_value"); 
 
-boolean isDuplicate = false;
+boolean isDuplicateId = false;
+boolean isDuplicatePhone = false;
 
 if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departmentValue.isEmpty() && !positionValue.isEmpty() && !phoneValue.isEmpty()){
     Class.forName("com.mysql.jdbc.Driver");
@@ -26,9 +27,20 @@ if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departme
     userInfoQuery.setString(1,idValue); 
     ResultSet userInfoResult = userInfoQuery.executeQuery();
   
+    String phoneInfo = "SELECT phonenumber FROM users WHERE phonenumber=?;";
+    PreparedStatement phoneQuery = connect.prepareStatement(phoneInfo);
+    phoneQuery.setString(1,phoneValue); 
+    ResultSet phoneInfoResult = phoneQuery.executeQuery();
+
     if(userInfoResult.next()){
-        isDuplicate = true;
-    }else{
+        isDuplicateId = true;
+    }
+
+    if(phoneInfoResult.next()) {
+        isDuplicatePhone = true;
+    }
+
+    if (!isDuplicateId && !isDuplicatePhone){
         String sql ="INSERT INTO users (id, password,name,department,position,phoneNumber) VALUES(?,?,?,?,?,?);";
         PreparedStatement query = connect.prepareStatement(sql);
         query.setString(1,idValue);
@@ -44,14 +56,22 @@ if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departme
 %>
 
 <script>
-    var isDuplicate = <%=isDuplicate%>
+    var isDuplicateId = <%=isDuplicateId%>
+    var isDuplicatePhone = <%=isDuplicatePhone%>
 
     function checkId(){
-        if(isDuplicate){
-            alert("중복된 아이디 입니다. 변경해주세요.")
+        if(isDuplicateId && isDuplicatePhone){
+            alert("중복된 아이디와 전화번호가 있습니다. 변경해주세요.")
+            location.href = "../viewPage/singup.jsp"
+        }else if(isDuplicateId){
+            alert("중복된 아이디가 있습니다. 변경해주세요.")
+            location.href = "../viewPage/singup.jsp"
+        }else if(isDuplicatePhone){
+            alert("중복된 전화번호가 있습니다. 변경해주세요.")
             location.href = "../viewPage/singup.jsp"
         }else{
             location.href="../../login.jsp"
+            localStorage.clear()
         }
     }
         

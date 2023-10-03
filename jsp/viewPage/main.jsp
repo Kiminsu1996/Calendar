@@ -10,15 +10,17 @@ Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calenda
 
 String idx = (String)session.getAttribute("idx");
 String department = (String)session.getAttribute("department");
+//직급추가
 
 if(idx == null){
     response.sendRedirect("../../login.jsp");
 }
 
-//직책이 팀원인 사람들을 찾는 쿼리문
-String findUserSql = "SELECT * FROM users WHERE position=?;";
+//같은 부서, 직책이 팀원인 사람들을 찾는 쿼리문
+String findUserSql = "SELECT * FROM users WHERE department=? AND position=?;";
 PreparedStatement findUserQuery = connect.prepareStatement(findUserSql);
-findUserQuery.setString(1,"1");
+findUserQuery.setString(1,department);
+findUserQuery.setString(2,"1");
 ResultSet findUserResult = findUserQuery.executeQuery();
 
 ArrayList findUserInfo = new ArrayList<String>();
@@ -31,7 +33,7 @@ while(findUserResult.next()){
     findUserDepartment.add(userDepartmentData);
 }
 
-// 로그인한 회원의 이름, 직책을 찾는 쿼리문
+// 로그인한 회원의 이름, 직책을 찾는 쿼리문 // 세션에 저장된 내용으로 사용가능하다. 지우기 
 String userInfoSql = "SELECT * FROM users WHERE idx=?;";
 PreparedStatement userInfoQuery = connect.prepareStatement(userInfoSql);
 userInfoQuery.setString(1,idx);
@@ -137,7 +139,6 @@ while(myContentSqlResult.next()){
 
     <script>
         var nowDate = new Date()
-        var detailModalDates = null
 
         function checkLogin(){
             var idx = <%=idx%>
@@ -146,34 +147,30 @@ while(myContentSqlResult.next()){
             }
         }
 
-        //팀장일 때 팀원들의 일정을 보여주는 함수
+
+        //팀장일 때 팀원들을 보여주는 함수  
         function createTeamUsers(){
             var userInfo = <%=userInfo%>
             var findUserInfo = <%=findUserInfo%>
             var findUserDepartment = <%=findUserDepartment%>
             var department = <%=department%>
             var userList = document.getElementById("userList")
-
            
-            console.log("userInfo[1] :" + userInfo[1])
-            console.log("findUserDepartment[0] =" + findUserDepartment[0])
-            console.log("findUserDepartment[1] =" + findUserDepartment[1])
-            console.log("findUserInfo :" + findUserInfo)
-            console.log("department =" + department)
-            
             for (var i = 0; i < findUserInfo.length; i++) {
-                
-                if (userInfo[1] > 1 && findUserDepartment[i] === department) {
 
+                //이 부분은 백엔드에서 처리해주기 
+                if (userInfo[1] > 1 && findUserDepartment[i] == department) {
                     var user = document.createElement("div")
                     user.className = "checkUserName"
 
                     var checkBox = document.createElement("input")
                     checkBox.type = "checkbox"
-
+            
                     var userName = document.createElement("p")
                     userName.className = "userNameList"
                     userName.innerHTML = findUserInfo[i]
+
+                    checkBox.addEventListener("change", showTeamMomverEvents)
 
                     user.append(checkBox, userName)
                     userList.appendChild(user)
@@ -181,11 +178,6 @@ while(myContentSqlResult.next()){
             }
         }
 
-        //캘린더 박스를 생성하는 함수
-        // create = generate
-        // insert = add 
-        // update
-        // remove
         function createDayBox() { 
             var day = document.getElementById("day")
             var columns = 7
@@ -200,40 +192,32 @@ while(myContentSqlResult.next()){
                 var formattedMonth = (nowDate.getMonth() + 1 < 10 ? "0" : "") + (nowDate.getMonth() + 1);
                 var formattedDate = (date < 10 ? "0" : "") + date;
 
-                firstDiv.className ="firstDiv"
+                firstDiv.className = "firstDiv"
                 firstDiv.style.width = widthValue
                 firstDiv.style.height = heightValue
                 firstDiv.style.border = "1px solid black"
-                firstDiv.style.display ="flex"
+                firstDiv.style.display = "flex"
                 firstDiv.style.flexDirection = "column"
-                firstDiv.style.justifyContent ="space-between"
-                firstDiv.style.alignItems ="center"
+                firstDiv.style.justifyContent = "space-between"
+                firstDiv.style.alignItems = "center"
                 firstDiv.style.backgroundColor = "#8FAADC"
-                firstDiv.setAttribute("data-date",year + "-" + formattedMonth + "-" + formattedDate)
-                firstDiv.setAttribute("data-month",formattedMonth)
-                firstDiv.setAttribute("data-day",formattedDate)
+                firstDiv.setAttribute("data-date", year + "-" + formattedMonth + "-" + formattedDate)
+                firstDiv.setAttribute("data-month", formattedMonth)
+                firstDiv.setAttribute("data-day", formattedDate)
                 
                 if (date <= getDatesInMonth(nowDate.getFullYear(), nowDate.getMonth() + 1)) {
                     var dateBtn = document.createElement("button")
                     
                     dateBtn.innerHTML = date
                     dateBtn.className = "dateBtn"
-                    dateBtn.setAttribute("data-month",nowDate.getMonth()+1)
-                    dateBtn.setAttribute("data-day",date)
-                    dateBtn.addEventListener("click",openInputModalEvent)
+                    dateBtn.setAttribute("data-month", nowDate.getMonth()+1)
+                    dateBtn.setAttribute("data-day", date)
+                    dateBtn.addEventListener("click", openInputModalEvent)
                     firstDiv.appendChild(dateBtn)
                 }
                 
                 day.appendChild(firstDiv)
             }
-        }
-
-        // 월을 변경하고 일자 업데이트
-        function changeMonthEvent(month) {
-            nowDate.setMonth(nowDate.getMonth() + month)
-            updateYearMonth(nowDate.getFullYear(), nowDate.getMonth() + 1)
-            updateCalendar()
-            showContent(nowDate.getFullYear(), nowDate.getMonth() + 1)
         }
 
         // 해당 월의 일 수를 가져오는 함수
@@ -255,37 +239,9 @@ while(myContentSqlResult.next()){
             createDayBox()
         }
 
-        //모달창 열기
-        function showInputModal(month,day) {
-            var modal = document.getElementById("inputMySchedule")
-            var modalDate = document.getElementById("modalDate")
-            var content = document.getElementById("content")
-            var time = document.getElementById("time")
-
-            modalDate.innerHTML = month + "월" + day + "일"
-            modal.style.display = "flex"
-            modal.style.justifyContent = "center"
-            modal.style.alignItems = "center"
-            modal.style.flexDirection = "column"
-
-            content.value = ""
-            time.value = ""
-
-            var modalDates = document.getElementById("modalDates")
-            var year = nowDate.getFullYear()
-            var formattedDate = year + "-" + (month < 10 ? "0" : "") + month + "-" + (day < 10 ? "0" : "") + day
-            modalDates.value = formattedDate
-        }
-
-        //모달창에 빈값 확인 
-        function checkEmpty(){
-            var saveModalBtn = document.getElementById("saveModalBtn")
-            saveModalBtn.addEventListener("click",saveModalBtnEvent)
-        }
-
          //일정을 캘린더에 보여주는 함수
          function showContent(year, month) {
-            var firstDivs = document.querySelectorAll(".firstDiv") // 모든 firstDiv를 선택
+            var firstDivs = document.querySelectorAll(".firstDiv")
             var eventInfo = <%=eventInfo%>
             var userInfo = <%=userInfo%>
 
@@ -296,7 +252,10 @@ while(myContentSqlResult.next()){
               
                 // 해당 날짜에 대한 일정 정보를 저장할 배열
                 var eventsOnDate = []
+                
+                if(!eventInfo[1]) return
 
+                // 내용 정제
                 for (var j = 0; j < eventInfo[1].length; j++) {
                     if (firstDivDate === eventInfo[1][j]) {
                         var eventContent = eventInfo[0][j] //내용
@@ -308,20 +267,20 @@ while(myContentSqlResult.next()){
                             content: eventContent,
                             time: processEventTime[0] + ":" + processEventTime[1]
                         }
-
                         eventsOnDate.push(eventInfoObj)
                     }
                 }
-
-                //일정이 있다면 모두 표시
+                
+                //내용 뿌려줌
                 if (eventsOnDate.length) {
                     var firstDiv = firstDivs[i]
                     var infoBtn = document.createElement("button")
+
                     infoBtn.className = "infoBtn"
                     infoBtn.setAttribute("data-month", firstDivMonth)
                     infoBtn.setAttribute("data-day", firstDivDay)
 
-                    // 여러 개의 일정이 있을 경우 일정 개수 표시
+                    // 여러 개의 일정이 있을 경우 일정 개수로 표시
                     if (eventsOnDate.length > 1) {
                         infoBtn.innerHTML = eventsOnDate.length
                         firstDiv.appendChild(infoBtn)
@@ -355,6 +314,34 @@ while(myContentSqlResult.next()){
             }
         }
 
+          //모달창 열기
+          function showInputModal(month,day) {
+            var modal = document.getElementById("inputMySchedule")
+            var modalDate = document.getElementById("modalDate")
+            var content = document.getElementById("content")
+            var time = document.getElementById("time")
+
+            modalDate.innerHTML = month + "월" + day + "일"
+            modal.style.display = "flex"
+            modal.style.justifyContent = "center"
+            modal.style.alignItems = "center"
+            modal.style.flexDirection = "column"
+
+            content.value = ""
+            time.value = ""
+
+            var modalDates = document.getElementById("modalDates")
+            var year = nowDate.getFullYear()
+            var formattedDate = year + "-" + (month < 10 ? "0" : "") + month + "-" + (day < 10 ? "0" : "") + day
+            modalDates.value = formattedDate
+        }
+
+        //모달창에 빈값 확인 
+        function checkEmpty(){
+            var saveModalBtn = document.getElementById("saveModalBtn")
+            saveModalBtn.addEventListener("click",saveModalBtnEvent)
+        }
+
         //일정 자세히 보기  
         function infoBtnClickEvent(event) {
             var eventInfo = <%=eventInfo%>
@@ -386,9 +373,9 @@ while(myContentSqlResult.next()){
             for (var i = 0; i < eventInfo[1].length; i++) {
 
                 if (eventInfo[1][i] === nowDate.getFullYear() + '-' + infoBtnMonth + '-' + infoBtnDay) {
-                    var eventTime = eventInfo[2][i]; //시간
-                    var userName = userInfo[0]; //이름
-                    var eventContent = eventInfo[0][i]; //내용
+                    var eventTime = eventInfo[2][i] //시간
+                    var userName = userInfo[0] //이름
+                    var eventContent = eventInfo[0][i] //내용
                     var processEventTime = eventTime.split(":", 2) // 시간 데이터 가공
            
                     var eventElements = document.createElement("div")
@@ -396,7 +383,7 @@ while(myContentSqlResult.next()){
                     
                     var eventInfos = document.createElement("div")
                     eventInfos.id="eventInfos"
-                    eventInfos.innerHTML = processEventTime[0]+ ":" +processEventTime[1] + " " + userName + " " + eventContent;
+                    eventInfos.innerHTML = processEventTime[0] + ":" + processEventTime[1] + " " + userName + " " + eventContent;
 
                     var modifyContentATag = document.createElement("a")
                     modifyContentATag.innerHTML = "수정"
@@ -411,17 +398,25 @@ while(myContentSqlResult.next()){
                     var btnDiv = document.createElement("div")
                     btnDiv.id = "btnDiv"
 
-                    btnDiv.append(modifyContentATag,deleteContentATag)
-                    eventElements.append(eventInfos,btnDiv)
+                    btnDiv.append(modifyContentATag, deleteContentATag)
+                    eventElements.append(eventInfos, btnDiv)
                     contentDetails.appendChild(eventElements)
                 }
             }
 
             contentDetailModal.innerHTML = ''
-            detailModalHeader.append(detailModalDate,modalCloseBtn)
-            contentDetailModal.append(detailModalHeader,contentDetails)
+            detailModalHeader.append(detailModalDate, modalCloseBtn)
+            contentDetailModal.append(detailModalHeader, contentDetails)
         }
         
+         // 월을 변경하고 일자 업데이트
+        function changeMonthEvent(month) {
+            nowDate.setMonth(nowDate.getMonth() + month)
+            updateYearMonth(nowDate.getFullYear(), nowDate.getMonth() + 1)
+            updateCalendar()
+            showContent(nowDate.getFullYear(), nowDate.getMonth() + 1)
+        }
+
         
        //일정 자세히 보기 모달창 닫기 이벤트
         function detailMoadCloseEvent() {
@@ -439,7 +434,7 @@ while(myContentSqlResult.next()){
         function openInputModalEvent(event) { 
             var clickedDate = event.target.getAttribute("data-day")
             var clickedMonth = event.target.getAttribute("data-month")
-            showInputModal(clickedMonth,clickedDate)
+            showInputModal(clickedMonth, clickedDate)
         }
         
         //모달창 내용을 저장하는 이벤트
@@ -465,6 +460,12 @@ while(myContentSqlResult.next()){
         function goUserInfoPageEvent(){
             location.href = "userInfo.jsp"
         }
+
+        function showTeamMomverEvents(){
+            //여기에 같은 부서의 팀원들의 정보를 fistDiv에 보여주는 코드 작성하기
+            
+        }
+
         window.onload = function(){
             createTeamUsers()
             checkLogin()
@@ -474,6 +475,12 @@ while(myContentSqlResult.next()){
             showContent()
         }
        
+
+          //캘린더 박스를 생성하는 함수
+        // create = generate
+        // insert = add 
+        // update
+        // remove
     </script>
 </body>
 

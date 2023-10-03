@@ -21,6 +21,11 @@
                 <input id="userPw" type="password" placeholder="5~20글자 사이의 PW입력" name="pw_value" />
             </div>
 
+            <div class="user findpw">
+                <label>비밀번호 확인</label>
+                <input id="userFindPw" type="password" placeholder="비밀번호 확인"/>
+            </div>
+
             <div class="user name">
                 <label>이름</label>
                 <input id="userName" type="text" name="name_value" placeholder="최대 20글자 제한" maxlength="20" />
@@ -52,39 +57,88 @@
         
             <div id="loginBtnDiv">
                 <button class="btn" type="button" onclick="goLoginPageEvent()">뒤로가기</button>
-                <button class="emptyCheck btn " type="submit">확인</button>
+                <button id="emptyCheck" class="btn" type="button" onclick="checkSingupEvent()">확인</button>
             </div>
         </form>
     </main>
     <script>
-        function checkEmpty(){
-            var checkPwBtn = document.querySelector(".emptyCheck")
-            checkPwBtn.addEventListener("click",checkSingupEvent)
-        }
 
-        function checkSingupEvent(e){
+         function checkSingupEvent(){
             var userId = document.getElementById("userId")
             var userPw = document.getElementById("userPw")
+            var userFindPw = document.getElementById("userFindPw")
             var userName = document.getElementById("userName")
             var userDepartment = document.getElementById("userDepartment")
             var userPosition = document.getElementById("userPosition")
             var userPhone = document.getElementById("userPhone")
-            var idPwPattern = /^[a-zA-Z0-9]{5,20}$/;
-            var phonePattern = /^01[0-9]{1}-[0-9]{3,4}-[0-9]{4}$/;
+            var idPwPattern = /^[a-zA-Z0-9]{5,20}$/
+            var phonePattern = /^01[0-9]{1}-[0-9]{3,4}-[0-9]{4}$/
 
-            if(userId.value === "" || userName.value === "" || userPhone.value  === "" || userPw.value  === "" ||
-            userDepartment.value  === "" || userPosition.value  === "" ){
-                e.preventDefault();
+            var userIdValue = userId.value
+            var userPwValue = userPw.value
+            var userFindPwValue = userFindPw.value
+            var userNameValue = userName.value
+            var userDepartmentValue = userDepartment.value
+            var userPositionValue = userPosition.value
+            var userPhoneValue = userPhone.value
+
+            //로컬스토리지에 데이터 보내기 
+            localStorage.setItem('userId', userIdValue)
+            localStorage.setItem('userPw', userPwValue)
+            localStorage.setItem('userFindPw', userFindPwValue)
+            localStorage.setItem('userName', userNameValue)
+            localStorage.setItem('userDepartment', userDepartmentValue)
+            localStorage.setItem('userPosition', userPositionValue)
+            localStorage.setItem('userPhone', userPhoneValue)
+
+            if (userIdValue === "" || 
+                userPwValue === "" || 
+                userFindPwValue === "" || 
+                userNameValue === "" || 
+                userDepartmentValue === "" ||
+                userPositionValue === "" || 
+                userPhoneValue === "" ){
                 alert("빈칸 없이 다 적어주세요.")
-            }else if(!idPwPattern.test(userId.value)){
-                e.preventDefault();
+            }else if (userPwValue !== userFindPwValue ){
+                alert("비밀번호가 다릅니다. 확인해 주세요.")
+            }else if (!idPwPattern.test(userIdValue)){
                 alert("아이디는 영어와 숫자를 사용해주세요.")
-            }else if(!idPwPattern.test(userPw.value)){
-                e.preventDefault();
+            }else if (!idPwPattern.test(userPwValue)){
                 alert("비밀번호는 영어와 숫자를 사용해주세요.")
-            }else if(!phonePattern.test(userPhone.value)){
-                e.preventDefault();
+            }else if (!phonePattern.test(userPhoneValue)){
                 alert("전화번호 사이에 - 입력해주세요.")
+            }else{
+                document.getElementById("formShare").submit()
+            }
+        }
+
+        function restoreInputValues() {
+            var userId = document.getElementById("userId");
+            var userPw = document.getElementById("userPw");
+            var userFindPw = document.getElementById("userFindPw");
+            var userName = document.getElementById("userName");
+            var userDepartment = document.getElementById("userDepartment");
+            var userPosition = document.getElementById("userPosition");
+            var userPhone = document.getElementById("userPhone");
+
+            // 로컬 스토리지에서 데이터 가져오기
+            var saveUserId = localStorage.getItem('userId');
+            var saveUserPw = localStorage.getItem('userPw');
+            var saveUserFindPw = localStorage.getItem('userFindPw');
+            var saveUserName = localStorage.getItem('userName');
+            var saveUserDepartment = localStorage.getItem('userDepartment');
+            var saveUserPosition = localStorage.getItem('userPosition');
+            var saveUserPhone = localStorage.getItem('userPhone');
+
+             // 필드에 데이터 설정
+            if (saveUserId && saveUserPw && saveUserFindPw && saveUserName && saveUserDepartment && saveUserPosition && saveUserPhone) {
+                userId.value = saveUserId;
+                userPw.value = saveUserPw;
+                userFindPw.value = saveUserFindPw;
+                userName.value = saveUserName;
+                userDepartment.value = saveUserDepartment;
+                userPosition.value = saveUserPosition;
+                userPhone.value = saveUserPhone;
             }
         }
 
@@ -92,8 +146,9 @@
             location.href="../../login.jsp"
         }
 
-        window.onload = function(){
-            checkEmpty()
+        window.onload = function() {
+            restoreInputValues()
+            localStorage.clear()
         }
     </script>
 </body>

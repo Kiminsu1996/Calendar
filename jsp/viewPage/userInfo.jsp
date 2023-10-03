@@ -56,7 +56,12 @@ if(idx != null){
 
             <div class="user pw">
                 <label>비밀번호</label>
-                <input id="userPw" type="text" placeholder="5~20글자 사이의 PW입력" name="pw_value" />
+                <input id="userPw" type="password" placeholder="5~20글자 사이의 PW입력" name="pw_value" />
+            </div>
+
+            <div class="user findpw">
+                <label>비밀번호 확인</label>
+                <input id="userFindPw" type="password" placeholder="비밀번호 확인"/>
             </div>
 
             <div class="user name">
@@ -120,6 +125,7 @@ if(idx != null){
         function checkUserInfoEvent(e){
             var userId = document.getElementById("userId")
             var userPw = document.getElementById("userPw")
+            var userFindPw = document.getElementById("userFindPw")
             var userName = document.getElementById("userName")
             var userDepartment = document.getElementById("userDepartment")
             var userPosition = document.getElementById("userPosition")
@@ -127,21 +133,25 @@ if(idx != null){
             var idPwPattern = /^[a-zA-Z0-9]{5,20}$/;
             var phonePattern = /^01[0-9]{1}-[0-9]{3,4}-[0-9]{4}$/;
 
-            if(userId.value === "" || userName.value === "" || userPhone.value  === "" || userPw.value  === "" ||
+            if(userId.value === "" || userName.value === "" || userFindPw.value ==="" || userPhone.value  === "" || userPw.value  === "" ||
             userDepartment.value  === "" || userPosition.value  === "" ){
-                e.preventDefault();
+                e.preventDefault()
                 alert("빈칸 없이 다 적어주세요.")
+            }else if(userPw.value !== userFindPw.value ){
+                e.preventDefault()
+                alert("비밀번호가 다릅니다. 확인해 주세요.")
             }else if(!idPwPattern.test(userId.value)){
-                e.preventDefault();
+                e.preventDefault()
                 alert("아이디는 영어와 숫자를 사용해주세요.")
             }else if(!idPwPattern.test(userPw.value)){
-                e.preventDefault();
+                e.preventDefault()
                 alert("비밀번호는 영어와 숫자를 사용해주세요.")
             }else if(!phonePattern.test(userPhone.value)){
-                e.preventDefault();
+                e.preventDefault()
                 alert("전화번호 사이에 - 입력해주세요.")
             }
         }
+
 
         function goMainPageEvent(){
             location.href="main.jsp"
@@ -152,7 +162,7 @@ if(idx != null){
                 location.href ="../actionPage/deleteInfo.jsp"
             }
             else{
-                location.href ="../viewPage/main.jsp"
+                location.href ="../viewPage/userInfo.jsp"
             }
         }
 

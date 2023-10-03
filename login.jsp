@@ -42,7 +42,7 @@
                 e.preventDefault();
                 alert("빈칸 없이 다 적어주세요.")
             }
-        }
+        } // 여기 수정하기 html 확인 버튼 type을 button으로 하고 js에서 submit을 준다.
 
         window.onload = function(){
             checkEmpty()
