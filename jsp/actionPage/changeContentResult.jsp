@@ -17,7 +17,7 @@ if(!contentValue.isEmpty() && !timeValue.isEmpty()){
     
     String eventIdx = (String)session.getAttribute("eventIdx");
 
-    String sql =" UPDATE events SET content=? , time=? WHERE events_idx=?;";
+    String sql =" UPDATE events SET content=? , time=? WHERE idx=?;";
     PreparedStatement query = connect.prepareStatement(sql);
     query.setString(1,contentValue);
     query.setString(2,timeValue);

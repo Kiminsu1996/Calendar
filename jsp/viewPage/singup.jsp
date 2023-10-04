@@ -130,8 +130,14 @@
             var saveUserPosition = localStorage.getItem('userPosition');
             var saveUserPhone = localStorage.getItem('userPhone');
 
-             // 필드에 데이터 설정
-            if (saveUserId && saveUserPw && saveUserFindPw && saveUserName && saveUserDepartment && saveUserPosition && saveUserPhone) {
+             // 내가 적었던 데이터 불러오기
+            if (saveUserId && 
+                saveUserPw && 
+                saveUserFindPw && 
+                saveUserName && 
+                saveUserDepartment && 
+                saveUserPosition && 
+                saveUserPhone) {
                 userId.value = saveUserId;
                 userPw.value = saveUserPw;
                 userFindPw.value = saveUserFindPw;

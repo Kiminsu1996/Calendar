@@ -95,7 +95,7 @@ if(idx != null){
         
             <div id="loginBtnDiv">
                 <button class="btn" type="button" onclick="goMainPageEvent()">뒤로가기</button>
-                <button class="emptyCheck btn " type="submit">수정</button>
+                <button id="emptyCheck" class="btn"  type="button" onclick="checkUserInfoEvent()">수정</button>
                 <button class="btn" type="button" onclick="deleteUserEvent()">탈퇴</button>
             </div>
         </form>
@@ -117,12 +117,7 @@ if(idx != null){
             }
         }
 
-        function checkEmpty(){
-            var checkPwBtn = document.querySelector(".emptyCheck")
-            checkPwBtn.addEventListener("click",checkUserInfoEvent)
-        }
-
-        function checkUserInfoEvent(e){
+        function checkUserInfoEvent(){
             var userId = document.getElementById("userId")
             var userPw = document.getElementById("userPw")
             var userFindPw = document.getElementById("userFindPw")
@@ -133,22 +128,24 @@ if(idx != null){
             var idPwPattern = /^[a-zA-Z0-9]{5,20}$/;
             var phonePattern = /^01[0-9]{1}-[0-9]{3,4}-[0-9]{4}$/;
 
-            if(userId.value === "" || userName.value === "" || userFindPw.value ==="" || userPhone.value  === "" || userPw.value  === "" ||
-            userDepartment.value  === "" || userPosition.value  === "" ){
-                e.preventDefault()
+            if(userId.value === "" || 
+                userName.value === "" || 
+                userFindPw.value ==="" || 
+                userPhone.value  === "" || 
+                userPw.value  === "" ||
+                userDepartment.value  === "" || 
+                userPosition.value  === "" ){
                 alert("빈칸 없이 다 적어주세요.")
             }else if(userPw.value !== userFindPw.value ){
-                e.preventDefault()
                 alert("비밀번호가 다릅니다. 확인해 주세요.")
             }else if(!idPwPattern.test(userId.value)){
-                e.preventDefault()
                 alert("아이디는 영어와 숫자를 사용해주세요.")
             }else if(!idPwPattern.test(userPw.value)){
-                e.preventDefault()
                 alert("비밀번호는 영어와 숫자를 사용해주세요.")
             }else if(!phonePattern.test(userPhone.value)){
-                e.preventDefault()
                 alert("전화번호 사이에 - 입력해주세요.")
+            }else{
+                document.getElementById("formShare").submit()
             }
         }
 
@@ -168,7 +165,6 @@ if(idx != null){
 
         window.onload = function(){
             showUserInfo()
-            checkEmpty()
         }
 
 

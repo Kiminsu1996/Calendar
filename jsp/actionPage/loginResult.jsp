@@ -10,9 +10,15 @@
 request.setCharacterEncoding("UTF-8"); 
 String idValue=request.getParameter("id_value"); 
 String pwValue=request.getParameter("pw_value"); 
+
+String year = null;
+String month = null;
+String day = null;
+
 ArrayList idxList = new ArrayList<String>();
 ArrayList idList = new ArrayList<String>();
 ArrayList pwList = new ArrayList<String>();
+
 
 if(!idValue.isEmpty() && !pwValue.isEmpty()){
     Class.forName("com.mysql.jdbc.Driver"); 
@@ -28,20 +34,27 @@ if(!idValue.isEmpty() && !pwValue.isEmpty()){
         String userIdxData = result.getString(1);
         String userIdData ="\"" + result.getString(2)+ "\"";     
         String userPwData = "\"" + result.getString(3) + "\""; 
+        String userName = "\"" + result.getString(4) + "\""; 
         String userDepartmentData = result.getString(5); 
+        String userPositionData = result.getString(6); 
+        String userPhoneNumberData = "\"" + result.getString(7) + "\""; 
+       
         idxList.add(userIdxData);
         idList.add(userIdData);
         pwList.add(userPwData);
+
         session.setAttribute("idx", userIdxData);
         session.setAttribute("id", userIdData);
+        session.setAttribute("name", userName);
         session.setAttribute("department", userDepartmentData);
+        session.setAttribute("position", userPositionData);
+        session.setAttribute("phonenumber", userPhoneNumberData);
     }
 }
 
 %>
 
 <script>
-    
     function checkLogin(){
         var idValue = "<%=idValue%>"
         var pwValue = "<%=pwValue%>"

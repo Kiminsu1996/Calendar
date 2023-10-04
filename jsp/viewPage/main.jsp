@@ -10,13 +10,16 @@ Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calenda
 
 String idx = (String)session.getAttribute("idx");
 String department = (String)session.getAttribute("department");
-//직급추가
+String position = (String)session.getAttribute("position");
+
+String lastMonthValue = request.getParameter("lastMonth"); 
+
 
 if(idx == null){
     response.sendRedirect("../../login.jsp");
 }
 
-//같은 부서, 직책이 팀원인 사람들을 찾는 쿼리문
+//같은 부서, 직책이 팀원인 사람들을 찾는 쿼리문 / 팀장일때만 
 String findUserSql = "SELECT * FROM users WHERE department=? AND position=?;";
 PreparedStatement findUserQuery = connect.prepareStatement(findUserSql);
 findUserQuery.setString(1,department);
@@ -90,9 +93,14 @@ while(myContentSqlResult.next()){
     <header>
         <div id="navbar">
             <div id="headerLeft">
-                <button class="go lastMonth" onclick="changeMonthEvent(-1)"><</button>
-                <button class="go nextMonth" onclick="changeMonthEvent(1)">></button>
-                <p id="yearMonth"></p>
+                <form id="goLastMonth" action="main.jsp">
+                    <!-- 버튼이 클릭 됐을 때 submuit으로 했으니깐 웹페이지가 바뀌면서 월이 바뀌어야된다.  -->
+                    <button class="go lastMonth" type="button" name="lastMonth" onclick="changeMonthEvent(-1)"><</button>
+                </form>
+                <form id="goNextMonth" action="main.jsp">
+                    <button class="go nextMonth" type="button" name="nextMonth" onclick="changeMonthEvent(1)">></button>
+                </form>
+                <p id="yearMonth"></p> 
             </div>
 
             <div id="headerRight">
@@ -115,7 +123,7 @@ while(myContentSqlResult.next()){
     <form id="inputMySchedule" action="../actionPage/makeContentResult.jsp">
         <div id="modalHeader">
             <p id="modalDate"></p>
-            <button class="modalCloseBtn" type="button" onclick="closeModalEvent()">X</button>
+            <button class="modalCloseBtn" type="submit" onclick="closeModalEvent()">X</button>
         </div>
 
         <div class="modal content">
@@ -138,15 +146,18 @@ while(myContentSqlResult.next()){
     </div>
 
     <script>
-        var nowDate = new Date()
+       var lastMonthValue =  <%=lastMonthValue%>
 
+        var nowDate = new Date()
+     
         function checkLogin(){
             var idx = <%=idx%>
-            if(idx < 1){
-                location.href = "../../login.jsp"
-            }
+            if(!(idx > 1)) return location.href = "../../login.jsp"
         }
 
+        function create(){
+           
+        }
 
         //팀장일 때 팀원들을 보여주는 함수  
         function createTeamUsers(){
@@ -157,8 +168,7 @@ while(myContentSqlResult.next()){
             var userList = document.getElementById("userList")
            
             for (var i = 0; i < findUserInfo.length; i++) {
-
-                //이 부분은 백엔드에서 처리해주기 
+                //***************************** 이 부분은 백엔드에서 처리해주기 즉 세션으로 가져오기*****************************
                 if (userInfo[1] > 1 && findUserDepartment[i] == department) {
                     var user = document.createElement("div")
                     user.className = "checkUserName"
@@ -227,8 +237,7 @@ while(myContentSqlResult.next()){
 
         // 년도와 월을 업데이트하는 함수
         function updateYearMonth(year, month) {
-            var yearMonth = document.getElementById("yearMonth");
-
+            var yearMonth = document.getElementById("yearMonth")
             yearMonth.innerHTML = year + "년 " + month + "월"
         }
 
@@ -272,7 +281,8 @@ while(myContentSqlResult.next()){
                 }
                 
                 //내용 뿌려줌
-                if (eventsOnDate.length) {
+                if (!eventsOnDate.length) continue
+
                     var firstDiv = firstDivs[i]
                     var infoBtn = document.createElement("button")
 
@@ -310,7 +320,7 @@ while(myContentSqlResult.next()){
                     
                     firstDiv.appendChild(infoBtn)
                     infoBtn.addEventListener("click", infoBtnClickEvent)
-                }
+                
             }
         }
 
@@ -346,7 +356,7 @@ while(myContentSqlResult.next()){
         function infoBtnClickEvent(event) {
             var eventInfo = <%=eventInfo%>
             var userInfo = <%=userInfo%>
-            
+    
             var infoBtnMonth = event.currentTarget.getAttribute("data-month")
             var infoBtnDay = event.currentTarget.getAttribute("data-day")
     
@@ -388,12 +398,12 @@ while(myContentSqlResult.next()){
                     var modifyContentATag = document.createElement("a")
                     modifyContentATag.innerHTML = "수정"
                     modifyContentATag.className = "detailModalATag"
-                    modifyContentATag.href = "changeContent.jsp?events_idx=" + eventInfo[3][i]
+                    modifyContentATag.href = "changeContent.jsp?idx=" + eventInfo[3][i]
                     
                     var deleteContentATag = document.createElement("a")
                     deleteContentATag.innerHTML = "삭제"
                     deleteContentATag.className = "detailModalATag"
-                    deleteContentATag.href ="../actionPage/deleteContent.jsp?events_idx=" + eventInfo[3][i]
+                    deleteContentATag.href ="../actionPage/deleteContent.jsp?idx=" + eventInfo[3][i]
 
                     var btnDiv = document.createElement("div")
                     btnDiv.id = "btnDiv"
@@ -415,6 +425,7 @@ while(myContentSqlResult.next()){
             updateYearMonth(nowDate.getFullYear(), nowDate.getMonth() + 1)
             updateCalendar()
             showContent(nowDate.getFullYear(), nowDate.getMonth() + 1)
+
         }
 
         
@@ -473,14 +484,8 @@ while(myContentSqlResult.next()){
             updateYearMonth(nowDate.getFullYear(), nowDate.getMonth() + 1)
             checkEmpty()
             showContent()
+           
         }
-       
-
-          //캘린더 박스를 생성하는 함수
-        // create = generate
-        // insert = add 
-        // update
-        // remove
     </script>
 </body>
 

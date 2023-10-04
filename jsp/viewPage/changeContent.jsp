@@ -9,12 +9,12 @@
 Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234"); 
 
 String idx = (String)session.getAttribute("idx");
-String eventsIdx = request.getParameter("events_idx");
+String eventIdx = request.getParameter("idx");
 
 
-String eventsInfoSql = "SELECT * FROM events WHERE events_idx=?;";
+String eventsInfoSql = "SELECT * FROM events WHERE idx=?;";
 PreparedStatement eventsInfoQuery = connect.prepareStatement(eventsInfoSql);
-eventsInfoQuery.setString(1,eventsIdx);
+eventsInfoQuery.setString(1,eventIdx);
 ResultSet eventsInfoResult = eventsInfoQuery.executeQuery();
 
 ArrayList eventsInfo = new ArrayList<String>();

@@ -8,14 +8,14 @@
 <% 
   request.setCharacterEncoding("UTF-8");
   
-  String eventsIdx = request.getParameter("events_idx");
+  String Idx = request.getParameter("idx");
 
   Class.forName("com.mysql.jdbc.Driver"); 
   Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234"); 
   
-  String sql ="DELETE FROM events WHERE events_idx=?;";
+  String sql ="DELETE FROM events WHERE idx=?;";
   PreparedStatement query = connect.prepareStatement(sql);   
-  query.setString(1,eventsIdx);
+  query.setString(1,Idx);
   query.executeUpdate();
 
 %>
