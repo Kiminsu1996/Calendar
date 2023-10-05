@@ -11,9 +11,6 @@ request.setCharacterEncoding("UTF-8");
 String idValue=request.getParameter("id_value"); 
 String pwValue=request.getParameter("pw_value"); 
 
-String year = null;
-String month = null;
-String day = null;
 
 ArrayList idxList = new ArrayList<String>();
 ArrayList idList = new ArrayList<String>();
@@ -60,9 +57,12 @@ if(!idValue.isEmpty() && !pwValue.isEmpty()){
         var pwValue = "<%=pwValue%>"
         var idList = <%=idList%>
         var pwList = <%=pwList%>  
-
+        
         if(idValue == idList[0] && pwValue == pwList[0]){
-            location.href = "../viewPage/main.jsp"
+            var nowDate = new Date()
+            var year = nowDate.getFullYear()
+            var month = nowDate.getMonth() + 1
+            location.href = `../viewPage/main.jsp?year=` + year + `&month=` +month
         }else{
             alert("아이디와 비밀번호를 다시 확인해 주세요.")
             location.href="../../login.jsp"

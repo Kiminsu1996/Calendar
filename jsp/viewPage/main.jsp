@@ -12,12 +12,14 @@ String idx = (String)session.getAttribute("idx");
 String department = (String)session.getAttribute("department");
 String position = (String)session.getAttribute("position");
 
-String lastMonthValue = request.getParameter("lastMonth"); 
 
+String yearUrl = request.getParameter("year");
+String monthUrl = request.getParameter("month");
 
 if(idx == null){
     response.sendRedirect("../../login.jsp");
 }
+
 
 //같은 부서, 직책이 팀원인 사람들을 찾는 쿼리문 / 팀장일때만 
 String findUserSql = "SELECT * FROM users WHERE department=? AND position=?;";
@@ -52,9 +54,11 @@ while(userInfoResult.next()){
 }
 
 // 일정 내용, date , 시간을 찾는 쿼리문
-String myContentSql = "SELECT * FROM events WHERE users_idx=?;";
+String myContentSql = "SELECT * FROM events WHERE users_idx=? AND YEAR(date) = ? AND MONTH(date) = ?;";
 PreparedStatement myContentQuery = connect.prepareStatement(myContentSql);
-myContentQuery.setString(1,idx);
+myContentQuery.setString(1, idx);
+myContentQuery.setString(2, yearUrl);
+myContentQuery.setString(3, monthUrl);
 ResultSet myContentSqlResult = myContentQuery.executeQuery();
 
 ArrayList eventInfo = new ArrayList<String>();
@@ -94,7 +98,6 @@ while(myContentSqlResult.next()){
         <div id="navbar">
             <div id="headerLeft">
                 <form id="goLastMonth" action="main.jsp">
-                    <!-- 버튼이 클릭 됐을 때 submuit으로 했으니깐 웹페이지가 바뀌면서 월이 바뀌어야된다.  -->
                     <button class="go lastMonth" type="button" name="lastMonth" onclick="changeMonthEvent(-1)"><</button>
                 </form>
                 <form id="goNextMonth" action="main.jsp">
@@ -123,7 +126,7 @@ while(myContentSqlResult.next()){
     <form id="inputMySchedule" action="../actionPage/makeContentResult.jsp">
         <div id="modalHeader">
             <p id="modalDate"></p>
-            <button class="modalCloseBtn" type="submit" onclick="closeModalEvent()">X</button>
+            <button class="modalCloseBtn" type="button" onclick="closeModalEvent()">X</button>
         </div>
 
         <div class="modal content">
@@ -134,6 +137,7 @@ while(myContentSqlResult.next()){
             <label>시간:</label>
             <input class="modalInput" id="time" type="time" name="time_value">            
             <input type="date" id="modalDates" style="display: none" name="date_value">
+            <input type="hidden" id="eventIdx" name="eventIdx" value="">
         </div>
         <button id="saveModalBtn" class="modalBtn" type="submit">확인</button>
     </form>
@@ -146,7 +150,7 @@ while(myContentSqlResult.next()){
     </div>
 
     <script>
-       var lastMonthValue =  <%=lastMonthValue%>
+
 
         var nowDate = new Date()
      
@@ -155,9 +159,6 @@ while(myContentSqlResult.next()){
             if(!(idx > 1)) return location.href = "../../login.jsp"
         }
 
-        function create(){
-           
-        }
 
         //팀장일 때 팀원들을 보여주는 함수  
         function createTeamUsers(){
@@ -195,11 +196,13 @@ while(myContentSqlResult.next()){
             var widthValue = 100 / columns + "%"
             var heightValue = 100 / rows + "%"
             
+            var url = new URLSearchParams(window.location.search);
+            var yearUrl = url.get('year');
+            var monthUrl = url.get('month');
+
             for (var i = 0; i < columns * rows; i++) {
                 var firstDiv = document.createElement("div")
                 var date = i + 1
-                var year = nowDate.getFullYear()
-                var formattedMonth = (nowDate.getMonth() + 1 < 10 ? "0" : "") + (nowDate.getMonth() + 1);
                 var formattedDate = (date < 10 ? "0" : "") + date;
 
                 firstDiv.className = "firstDiv"
@@ -211,16 +214,16 @@ while(myContentSqlResult.next()){
                 firstDiv.style.justifyContent = "space-between"
                 firstDiv.style.alignItems = "center"
                 firstDiv.style.backgroundColor = "#8FAADC"
-                firstDiv.setAttribute("data-date", year + "-" + formattedMonth + "-" + formattedDate)
-                firstDiv.setAttribute("data-month", formattedMonth)
+                firstDiv.setAttribute("data-date", yearUrl + "-" + monthUrl + "-" + formattedDate)
+                firstDiv.setAttribute("data-month", monthUrl)
                 firstDiv.setAttribute("data-day", formattedDate)
                 
-                if (date <= getDatesInMonth(nowDate.getFullYear(), nowDate.getMonth() + 1)) {
+                if (date <= getDatesInMonth(yearUrl, monthUrl)) {
                     var dateBtn = document.createElement("button")
                     
                     dateBtn.innerHTML = date
                     dateBtn.className = "dateBtn"
-                    dateBtn.setAttribute("data-month", nowDate.getMonth()+1)
+                    dateBtn.setAttribute("data-month", monthUrl)
                     dateBtn.setAttribute("data-day", date)
                     dateBtn.addEventListener("click", openInputModalEvent)
                     firstDiv.appendChild(dateBtn)
@@ -353,7 +356,7 @@ while(myContentSqlResult.next()){
         }
 
         //일정 자세히 보기  
-        function infoBtnClickEvent(event) {
+        function infoBtnClickEvent() {
             var eventInfo = <%=eventInfo%>
             var userInfo = <%=userInfo%>
     
@@ -368,6 +371,8 @@ while(myContentSqlResult.next()){
             contentDetailModal.style.justifyContent = "center"
             contentDetailModal.style.alignItems = "center"
             contentDetailModal.style.flexDirection = "column"
+            contentDetailModal.setAttribute("data-month", infoBtnMonth)
+            contentDetailModal.setAttribute("data-day", infoBtnDay)
 
             var detailModalHeader = document.getElementById("detailModalHeader")
     
@@ -387,7 +392,8 @@ while(myContentSqlResult.next()){
                     var userName = userInfo[0] //이름
                     var eventContent = eventInfo[0][i] //내용
                     var processEventTime = eventTime.split(":", 2) // 시간 데이터 가공
-           
+                    var eventIdx = eventInfo[3][i]
+
                     var eventElements = document.createElement("div")
                     eventElements.className = "eventElements"
                     
@@ -395,10 +401,11 @@ while(myContentSqlResult.next()){
                     eventInfos.id="eventInfos"
                     eventInfos.innerHTML = processEventTime[0] + ":" + processEventTime[1] + " " + userName + " " + eventContent;
 
-                    var modifyContentATag = document.createElement("a")
+                    var modifyContentATag = document.createElement("button")
                     modifyContentATag.innerHTML = "수정"
-                    modifyContentATag.className = "detailModalATag"
-                    modifyContentATag.href = "changeContent.jsp?idx=" + eventInfo[3][i]
+                    modifyContentATag.id = "detailModalBtnTag"
+                    modifyContentATag.type = "button"
+                    modifyContentATag.addEventListener("click",changeContentEvent)
                     
                     var deleteContentATag = document.createElement("a")
                     deleteContentATag.innerHTML = "삭제"
@@ -407,6 +414,9 @@ while(myContentSqlResult.next()){
 
                     var btnDiv = document.createElement("div")
                     btnDiv.id = "btnDiv"
+
+                    var eventIdxInput = document.getElementById("eventIdx")
+                    eventIdxInput.value = eventIdx
 
                     btnDiv.append(modifyContentATag, deleteContentATag)
                     eventElements.append(eventInfos, btnDiv)
@@ -421,10 +431,27 @@ while(myContentSqlResult.next()){
         
          // 월을 변경하고 일자 업데이트
         function changeMonthEvent(month) {
-            nowDate.setMonth(nowDate.getMonth() + month)
-            updateYearMonth(nowDate.getFullYear(), nowDate.getMonth() + 1)
+            var year = nowDate.getFullYear()
+            var currentMonth = nowDate.getMonth() + 1
+            var newMonth = currentMonth + month
+
+            if (newMonth > 12) {
+                year++
+                newMonth -= 12
+            } else if (newMonth < 1) {
+                year--;
+                newMonth += 12
+            }
+
+            nowDate.setFullYear(year)
+            nowDate.setMonth(newMonth - 1)
+
+            updateYearMonth(year, newMonth)
             updateCalendar()
-            showContent(nowDate.getFullYear(), nowDate.getMonth() + 1)
+            showContent(year, newMonth)
+
+            var formattedMonth = (newMonth < 10 ? "0" : "") + newMonth;
+            location.href = 'main.jsp?year=' + year + '&month=' + formattedMonth;
 
         }
 
@@ -443,8 +470,8 @@ while(myContentSqlResult.next()){
 
         //모달창에 월, 일을 찾는 이벤트
         function openInputModalEvent(event) { 
-            var clickedDate = event.target.getAttribute("data-day")
             var clickedMonth = event.target.getAttribute("data-month")
+            var clickedDate = event.target.getAttribute("data-day")
             showInputModal(clickedMonth, clickedDate)
         }
         
@@ -460,6 +487,36 @@ while(myContentSqlResult.next()){
                 e.preventDefault()
                 alert("빈칸 없이 다 적어주세요.")
             }
+        }
+    
+        //모달창의 내용을 수정하는 이벤트
+        function changeContentEvent(){
+            var eventIdxInput = document.getElementById("eventIdx");
+            var eventIdx = eventIdxInput.value;
+
+            var contentDetailModal = document.getElementById("contentDetailModal")
+            contentDetailModal.style.display="none"
+
+            var inputMySchedule = document.getElementById("inputMySchedule")
+            inputMySchedule.style.display = "flex"
+            inputMySchedule.style.justifyContent = "center"
+            inputMySchedule.style.alignItems = "center"
+            inputMySchedule.style.flexDirection = "column"
+            inputMySchedule.action = '../actionPage/changeContentResult.jsp?idx=' + eventIdx
+
+            
+           
+            var contentDetailMonth = contentDetailModal.getAttribute("data-month")
+            var contentDetailDay = contentDetailModal.getAttribute("data-day")
+
+            var modalDate = document.getElementById("modalDate")
+            modalDate.innerHTML = contentDetailMonth + "월" + contentDetailDay + "일"
+
+            var modalDates = document.getElementById("modalDates")
+            var year = nowDate.getFullYear()
+            var formattedDate = year + "-" + (contentDetailMonth < 10 ? "0" : "") + contentDetailMonth + "-" + (contentDetailDay < 10 ? "0" : "") + contentDetailDay
+            modalDates.value = formattedDate
+
         }
 
         //로그아웃 이벤트
@@ -478,12 +535,22 @@ while(myContentSqlResult.next()){
         }
 
         window.onload = function(){
-            createTeamUsers()
-            checkLogin()
-            createDayBox()
-            updateYearMonth(nowDate.getFullYear(), nowDate.getMonth() + 1)
+            // URL에서 연도와 월을 읽어오기
+            var url = new URLSearchParams(window.location.search);
+            var yearUrl = url.get('year');
+            var monthUrl = url.get('month');
+ 
+            var year = parseInt(yearUrl)
+            var month = parseInt(monthUrl) - 1
+            createTeamUsers();
+            checkLogin();
+            createDayBox();
+
+            nowDate = new Date(year, month, 1)
+            updateYearMonth(year, month + 1)
             checkEmpty()
-            showContent()
+            showContent(year, month + 1)
+            
            
         }
     </script>

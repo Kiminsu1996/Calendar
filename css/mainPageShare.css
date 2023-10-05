@@ -154,12 +154,25 @@ p{
 
 #btnDiv{
     display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 3%;
 }
 
 #userList{
     display: flex;
     flex-direction: column;
     width: 100%;
+}
+
+#detailModalBtnTag{
+    border: 1px solid black;
+    border-radius: 5px;
+    width: 50px;
+    height: 40px;
+    margin-right: 5px;
+    background-color: transparent;   
+    cursor: pointer;
 }
 
 .infoBtn{
