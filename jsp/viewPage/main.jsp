@@ -4,17 +4,29 @@
 <%@ page import="java.sql.PreparedStatement"%>
 <%@ page import="java.sql.ResultSet"%>
 <%@ page import="java.util.ArrayList"%>
+<%@ page import="java.util.Date" %>
 
 <%
 Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234"); 
 
 String idx = (String)session.getAttribute("idx");
+String userName = (String)session.getAttribute("name");
 String department = (String)session.getAttribute("department");
 String position = (String)session.getAttribute("position");
 
-
 String yearUrl = request.getParameter("year");
 String monthUrl = request.getParameter("month");
+String checkBoxValue = request.getParameter("checkBox_value");
+
+Date today = new Date ();
+int currentYear = today.getYear() + 1900;
+int currentMonth = today.getMonth() + 1;
+
+if(yearUrl == null || yearUrl.isEmpty() || monthUrl == null || monthUrl.isEmpty() || checkBoxValue == null || checkBoxValue.isEmpty()){
+    response.sendRedirect("main.jsp?year=" + currentYear + "&month=" + currentMonth);
+}
+
+
 
 if(idx == null){
     response.sendRedirect("../../login.jsp");
@@ -30,31 +42,19 @@ ResultSet findUserResult = findUserQuery.executeQuery();
 
 ArrayList findUserInfo = new ArrayList<String>();
 ArrayList findUserDepartment = new ArrayList<String>();
+ArrayList findUserIdx = new ArrayList<String>();
 
 while(findUserResult.next()){
+    String userIdxData = findUserResult.getString(1); 
     String userNameData = "\"" + findUserResult.getString(4) + "\""; 
     String userDepartmentData = "\"" + findUserResult.getString(5) + "\""; 
     findUserInfo.add(userNameData);
     findUserDepartment.add(userDepartmentData);
-}
-
-// 로그인한 회원의 이름, 직책을 찾는 쿼리문 // 세션에 저장된 내용으로 사용가능하다. 지우기 
-String userInfoSql = "SELECT * FROM users WHERE idx=?;";
-PreparedStatement userInfoQuery = connect.prepareStatement(userInfoSql);
-userInfoQuery.setString(1,idx);
-ResultSet userInfoResult = userInfoQuery.executeQuery();
-
-ArrayList userInfo = new ArrayList<String>();
-
-while(userInfoResult.next()){
-    String userNameData = "\"" + userInfoResult.getString(4) + "\""; 
-    String userPositionData = userInfoResult.getString(6); 
-    userInfo.add(userNameData);
-    userInfo.add(userPositionData);
+    findUserIdx.add(userIdxData);
 }
 
 // 일정 내용, date , 시간을 찾는 쿼리문
-String myContentSql = "SELECT * FROM events WHERE users_idx=? AND YEAR(date) = ? AND MONTH(date) = ?;";
+String myContentSql = "SELECT * FROM events WHERE users_idx=? AND YEAR(date) = ? AND MONTH(date) = ? ORDER BY time;";
 PreparedStatement myContentQuery = connect.prepareStatement(myContentSql);
 myContentQuery.setString(1, idx);
 myContentQuery.setString(2, yearUrl);
@@ -139,19 +139,18 @@ while(myContentSqlResult.next()){
             <input type="date" id="modalDates" style="display: none" name="date_value">
             <input type="hidden" id="eventIdx" name="eventIdx" value="">
         </div>
-        <button id="saveModalBtn" class="modalBtn" type="submit">확인</button>
+        <button id="saveModalBtn" class="modalBtn" type="button" onclick="saveModalBtnEvent()">확인</button>
     </form>
 
+    <!-- 일정 자세히 보기 -->
     <div id="contentDetailModal">
         <div id="detailModalHeader">
-        <p id="detailModalDate"></p>
-        <button class="modalCloseBtn" id="detailModalHeaderCloseBtn" type="button" onclick="detailMoadCloseEvent()">X</button>
+            <p id="detailModalDate"></p>
+            <button class="modalCloseBtn" id="detailModalHeaderCloseBtn" type="button" onclick="detailMoadCloseEvent()">X</button>
         </div>
     </div>
 
     <script>
-
-
         var nowDate = new Date()
      
         function checkLogin(){
@@ -161,30 +160,53 @@ while(myContentSqlResult.next()){
 
 
         //팀장일 때 팀원들을 보여주는 함수  
-        function createTeamUsers(){
-            var userInfo = <%=userInfo%>
+        function createTeamUsers(year, month){
+            var position = <%=position%>
+            var department = <%=department%>
             var findUserInfo = <%=findUserInfo%>
             var findUserDepartment = <%=findUserDepartment%>
-            var department = <%=department%>
+            var findUserIdx = <%=findUserIdx%>
             var userList = document.getElementById("userList")
-           
+            var year = year
+            var month = month + 1
+
             for (var i = 0; i < findUserInfo.length; i++) {
-                //***************************** 이 부분은 백엔드에서 처리해주기 즉 세션으로 가져오기*****************************
-                if (userInfo[1] > 1 && findUserDepartment[i] == department) {
+                if (position > 1 && findUserDepartment[i] == department) {
                     var user = document.createElement("div")
                     user.className = "checkUserName"
 
+                    var checkBoxForm = document.createElement("form")
+                    checkBoxForm.id = "checkBoxForm" + i
+                    checkBoxForm.action = 'main.jsp'
+                    
+                    var yearInput = document.createElement('input');
+                    yearInput.value = year
+                    yearInput.name = 'year'
+                    yearInput.style.display = "none"
+
+                    var monthInput = document.createElement('input');
+                    monthInput.value = month
+                    monthInput.name = 'month'
+                    monthInput.style.display = "none"
+
                     var checkBox = document.createElement("input")
+                    checkBox.className ="checkBox"
+                    checkBox.name = "checkBox_value"
                     checkBox.type = "checkbox"
-            
-                    var userName = document.createElement("p")
+                    checkBox.value = findUserIdx[i]
+
+                    var userName = document.createElement("label")
                     userName.className = "userNameList"
                     userName.innerHTML = findUserInfo[i]
 
-                    checkBox.addEventListener("change", showTeamMomverEvents)
+                    checkBox.addEventListener("click", showTeamMomverEvent)
 
-                    user.append(checkBox, userName)
+                    checkBoxForm.append(checkBox,userName)
+                    checkBoxForm.appendChild(yearInput);
+                    checkBoxForm.appendChild(monthInput);
+                    user.appendChild(checkBoxForm)
                     userList.appendChild(user)
+                    
                 }
             }
         }
@@ -252,10 +274,10 @@ while(myContentSqlResult.next()){
         }
 
          //일정을 캘린더에 보여주는 함수
-         function showContent(year, month) {
+         function showContent(year, month) { 
             var firstDivs = document.querySelectorAll(".firstDiv")
             var eventInfo = <%=eventInfo%>
-            var userInfo = <%=userInfo%>
+            var userName = <%=userName%> 
 
             for (var i = 0; i < firstDivs.length; i++) {
                 var firstDivDate = firstDivs[i].getAttribute("data-date") 
@@ -286,44 +308,46 @@ while(myContentSqlResult.next()){
                 //내용 뿌려줌
                 if (!eventsOnDate.length) continue
 
-                    var firstDiv = firstDivs[i]
-                    var infoBtn = document.createElement("button")
+                var firstDiv = firstDivs[i]
+                var infoBtn = document.createElement("button")
 
-                    infoBtn.className = "infoBtn"
-                    infoBtn.setAttribute("data-month", firstDivMonth)
-                    infoBtn.setAttribute("data-day", firstDivDay)
+                infoBtn.className = "infoBtn"
+                infoBtn.setAttribute("data-month", firstDivMonth)
+                infoBtn.setAttribute("data-day", firstDivDay)
 
-                    // 여러 개의 일정이 있을 경우 일정 개수로 표시
-                    if (eventsOnDate.length > 1) {
-                        infoBtn.innerHTML = eventsOnDate.length
-                        firstDiv.appendChild(infoBtn)
-                        
-                     // 한 개의 일정만 있을 경우 일정 정보 표시
-                    } else { 
-                        var eventInfoObj = eventsOnDate[0]
-
-                        var eventContent = eventInfoObj.content
-                        var eventTime = eventInfoObj.time
-                        var userName = userInfo[0]
-
-                        //이름
-                        var nameDiv = document.createElement("div")
-                        nameDiv.innerHTML = userName
-
-                        //내용
-                        var contentDiv = document.createElement("div")
-                        contentDiv.innerHTML = eventContent
-
-                        //시간
-                        var timeDiv = document.createElement("div")
-                        timeDiv.innerHTML = eventTime
-
-                        infoBtn.append(nameDiv, timeDiv, contentDiv)
-                    }
-                    
+                // 여러 개의 일정이 있을 경우 일정 개수로 표시
+                if (eventsOnDate.length > 1) {
+                    infoBtn.innerHTML = eventsOnDate.length
                     firstDiv.appendChild(infoBtn)
-                    infoBtn.addEventListener("click", infoBtnClickEvent)
+                    
+                    // 한 개의 일정만 있을 경우 일정 정보 표시
+                } else { 
+                    var eventInfoObj = eventsOnDate[0]
+
+                    var eventContent = eventInfoObj.content
+                    var eventTime = eventInfoObj.time
+                    var userName = userName
+
+                    //이름
+                    var nameDiv = document.createElement("div")
+                    nameDiv.className = "contentUserName"
+                    nameDiv.innerHTML = userName
+
+                    //시간
+                    var timeDiv = document.createElement("div")
+                    timeDiv.className = "contentUserTime"
+                    timeDiv.innerHTML = eventTime
+
+                    //내용
+                    var contentDiv = document.createElement("div")
+                    contentDiv.className = 'contentUserDetail'
+                    contentDiv.innerHTML = eventContent
+
+                    infoBtn.append(nameDiv, timeDiv, contentDiv)
+                }
                 
+                firstDiv.appendChild(infoBtn)
+                infoBtn.addEventListener("click", infoBtnClickEvent)
             }
         }
 
@@ -349,17 +373,12 @@ while(myContentSqlResult.next()){
             modalDates.value = formattedDate
         }
 
-        //모달창에 빈값 확인 
-        function checkEmpty(){
-            var saveModalBtn = document.getElementById("saveModalBtn")
-            saveModalBtn.addEventListener("click",saveModalBtnEvent)
-        }
 
         //일정 자세히 보기  
         function infoBtnClickEvent() {
             var eventInfo = <%=eventInfo%>
-            var userInfo = <%=userInfo%>
-    
+            var userName = <%=userName%>
+           
             var infoBtnMonth = event.currentTarget.getAttribute("data-month")
             var infoBtnDay = event.currentTarget.getAttribute("data-day")
     
@@ -389,7 +408,7 @@ while(myContentSqlResult.next()){
 
                 if (eventInfo[1][i] === nowDate.getFullYear() + '-' + infoBtnMonth + '-' + infoBtnDay) {
                     var eventTime = eventInfo[2][i] //시간
-                    var userName = userInfo[0] //이름
+                    var userName = userName //이름 
                     var eventContent = eventInfo[0][i] //내용
                     var processEventTime = eventTime.split(":", 2) // 시간 데이터 가공
                     var eventIdx = eventInfo[3][i]
@@ -399,7 +418,7 @@ while(myContentSqlResult.next()){
                     
                     var eventInfos = document.createElement("div")
                     eventInfos.id="eventInfos"
-                    eventInfos.innerHTML = processEventTime[0] + ":" + processEventTime[1] + " " + userName + " " + eventContent;
+                    eventInfos.innerHTML = processEventTime[0] + ":" + processEventTime[1] + " " + userName + "<br>" + eventContent;
 
                     var modifyContentATag = document.createElement("button")
                     modifyContentATag.innerHTML = "수정"
@@ -450,8 +469,8 @@ while(myContentSqlResult.next()){
             updateCalendar()
             showContent(year, newMonth)
 
-            var formattedMonth = (newMonth < 10 ? "0" : "") + newMonth;
-            location.href = 'main.jsp?year=' + year + '&month=' + formattedMonth;
+            var formattedMonth = (newMonth < 10 ? "0" : "") + newMonth
+            location.href = 'main.jsp?year=' + year + '&month=' + formattedMonth
 
         }
 
@@ -476,7 +495,7 @@ while(myContentSqlResult.next()){
         }
         
         //모달창 내용을 저장하는 이벤트
-        function saveModalBtnEvent(e){
+        function saveModalBtnEvent(){
             var content = document.getElementById("content")
             var time = document.getElementById("time")
             var empty= time.value
@@ -484,13 +503,16 @@ while(myContentSqlResult.next()){
             time.value = formTime
 
             if(content.value === "" || time.value === ""){
-                e.preventDefault()
                 alert("빈칸 없이 다 적어주세요.")
+            }else{
+                document.getElementById("inputMySchedule").submit()
             }
+
         }
     
         //모달창의 내용을 수정하는 이벤트
         function changeContentEvent(){
+            var eventInfo = <%=eventInfo%>
             var eventIdxInput = document.getElementById("eventIdx");
             var eventIdx = eventIdxInput.value;
 
@@ -502,10 +524,8 @@ while(myContentSqlResult.next()){
             inputMySchedule.style.justifyContent = "center"
             inputMySchedule.style.alignItems = "center"
             inputMySchedule.style.flexDirection = "column"
-            inputMySchedule.action = '../actionPage/changeContentResult.jsp?idx=' + eventIdx
+            inputMySchedule.action = '../actionPage/changeContentResult.jsp' 
 
-            
-           
             var contentDetailMonth = contentDetailModal.getAttribute("data-month")
             var contentDetailDay = contentDetailModal.getAttribute("data-day")
 
@@ -517,6 +537,18 @@ while(myContentSqlResult.next()){
             var formattedDate = year + "-" + (contentDetailMonth < 10 ? "0" : "") + contentDetailMonth + "-" + (contentDetailDay < 10 ? "0" : "") + contentDetailDay
             modalDates.value = formattedDate
 
+            for (var i = 0; i < eventInfo[1].length; i++) {
+                if (eventInfo[1][i] === nowDate.getFullYear() + '-' + contentDetailMonth + '-' + contentDetailDay) {
+                    var content = document.getElementById("content")
+                    var time = document.getElementById("time")
+
+                    var eventTime = eventInfo[2][i] //시간
+                    var eventContent = eventInfo[0][i] //내용
+
+                    content.value = eventContent
+                    time.value = eventTime
+                }
+            }
         }
 
         //로그아웃 이벤트
@@ -529,29 +561,69 @@ while(myContentSqlResult.next()){
             location.href = "userInfo.jsp"
         }
 
-        function showTeamMomverEvents(){
-            //여기에 같은 부서의 팀원들의 정보를 fistDiv에 보여주는 코드 작성하기
-            
+        function showTeamMomverEvent(e){
+        
+            //김인수 라는 사람의 버튼을 체크 했을 때 DB에서 그 사람의 일정을 조회해서 페이지가 그 달로 로딩되고 firstDiv에 보여줘야 한다. 
+            // 일단 체크박스를 클릭했을 때 main.jsp 페이지로 그 사람의 idx나 뭐 정보를 url로 보내서 그 정보를 가지고 다시 
+            //조회해서 DB에 접근 후 그 달에 맞는 데이터를 가져와야한다.
+            // DB가져오면서 firstDiv에 보여줘야한다.
+
+            var userCheckBoxes = document.querySelectorAll('.checkBox')
+            var selectedUserIndexes = [] 
+            var checkBox = e.target
+            var checkBoxValue = checkBox.value
+            var isChecked = checkBox.checked
+
+            for (var i = 0; i < userCheckBoxes.length; i++) {
+                var form = document.getElementById("checkBoxForm"+i)
+                
+                if (userCheckBoxes[i].checked){
+                    selectedUserIndexes.push(userCheckBoxes[i].value)
+                    form.submit()
+                }
+            }
+
+            localStorage.setItem("isChecked",isChecked)
+            localStorage.setItem("checkBoxValue",checkBoxValue)
         }
 
         window.onload = function(){
             // URL에서 연도와 월을 읽어오기
-            var url = new URLSearchParams(window.location.search);
-            var yearUrl = url.get('year');
-            var monthUrl = url.get('month');
+            var url = new URLSearchParams(window.location.search)
+            var yearUrl = url.get('year')
+            var monthUrl = url.get('month')
  
             var year = parseInt(yearUrl)
             var month = parseInt(monthUrl) - 1
-            createTeamUsers();
-            checkLogin();
-            createDayBox();
+
+            createTeamUsers(year, month)
+            checkLogin()
+            createDayBox()
 
             nowDate = new Date(year, month, 1)
             updateYearMonth(year, month + 1)
-            checkEmpty()
             showContent(year, month + 1)
-            
+
+            var checkBoxValue = localStorage.getItem("checkBoxValue");
+            var isChecked = localStorage.getItem("isChecked");
+
+
+            if (isChecked === "true") {
+                var userCheckBoxes = document.querySelectorAll('.checkBox');
+                for (var i = 0; i < userCheckBoxes.length; i++) {
+                    if(userCheckBoxes[i].value == checkBoxValue ){
+                        userCheckBoxes[i].checked = true;
+                    }
+                }
+            }
            
+
+            console.log(checkBoxValue)
+            console.log(isChecked)
+                
+            
+
+
         }
     </script>
 </body>

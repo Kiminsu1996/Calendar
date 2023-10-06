@@ -12,11 +12,11 @@ String dateValue = request.getParameter("date_value");
 String timeValue = request.getParameter("time_value"); 
 
 
-if(!contentValue.isEmpty() && !timeValue.isEmpty() && !dateValue.isEmpty()){
+if(!contentValue.isEmpty() && !dateValue.isEmpty() && !timeValue.isEmpty()){
     Class.forName("com.mysql.jdbc.Driver");
     Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234");
     
-    String eventIdx = request.getParameter("idx");
+    String eventIdx = request.getParameter("eventIdx");
 
     String sql = "UPDATE events SET content=?, date=? , time=? WHERE idx=?;";
     PreparedStatement query = connect.prepareStatement(sql);
@@ -39,12 +39,11 @@ if(!contentValue.isEmpty() && !timeValue.isEmpty() && !dateValue.isEmpty()){
        
         var contentValue = '<%=contentValue%>'
         var timeValue = '<%=timeValue%>'
-    
-    
+        
         if(contentValue == "" && timeValue == ""){
             alert("빈칸 없이 다 적어주세요.")
         }else{
-            // location.href="../viewPage/main.jsp?year=" + year + "&month=" + month
+            location.href="../viewPage/main.jsp?year=" + year + "&month=" + month
         }
     }
 

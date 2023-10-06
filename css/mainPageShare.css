@@ -272,3 +272,11 @@ p{
     display: flex;
     justify-content: center;
 }
+
+.contentUserDetail{
+    /* width: 100%; */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 9em;
+}
