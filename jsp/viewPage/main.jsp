@@ -17,18 +17,9 @@ String position = (String)session.getAttribute("position");
 String yearUrl = request.getParameter("year");
 String monthUrl = request.getParameter("month");
 String checkBoxValue = request.getParameter("checkBox_value");
+String selectedUsersValue = request.getParameter("selectedUserIdx_value");
 
-Date today = new Date ();
-int currentYear = today.getYear() + 1900;
-int currentMonth = today.getMonth() + 1;
-
-if(yearUrl == null || yearUrl.isEmpty() || monthUrl == null || monthUrl.isEmpty() || checkBoxValue == null || checkBoxValue.isEmpty()){
-    response.sendRedirect("main.jsp?year=" + currentYear + "&month=" + currentMonth);
-}
-
-
-
-if(idx == null){
+if(idx == null || idx.isEmpty()){
     response.sendRedirect("../../login.jsp");
 }
 
@@ -116,7 +107,11 @@ while(myContentSqlResult.next()){
     <main>
         <div id="calendar">
             <div id="checkUser">
-                <div id="userList"></div>
+                <div id="userList">
+                    <form id="checkBoxForm" action="main.jsp">
+                        <button class="checkBtn" type="button" onclick="showTeamMomverEvent()">확인</button>
+                    </form>
+                </div>
             </div>
             <div id="day"></div>
         </div>
@@ -151,8 +146,11 @@ while(myContentSqlResult.next()){
     </div>
 
     <script>
+        var selectedUsersValue = <%=selectedUsersValue%>
+        console.log(selectedUsersValue)
+    
         var nowDate = new Date()
-     
+       
         function checkLogin(){
             var idx = <%=idx%>
             if(!(idx > 1)) return location.href = "../../login.jsp"
@@ -166,50 +164,62 @@ while(myContentSqlResult.next()){
             var findUserInfo = <%=findUserInfo%>
             var findUserDepartment = <%=findUserDepartment%>
             var findUserIdx = <%=findUserIdx%>
+            var checkBoxForm = document.getElementById("checkBoxForm")
             var userList = document.getElementById("userList")
             var year = year
             var month = month + 1
-
+            var checkBoxValue = <%=checkBoxValue%>
+             
             for (var i = 0; i < findUserInfo.length; i++) {
                 if (position > 1 && findUserDepartment[i] == department) {
-                    var user = document.createElement("div")
-                    user.className = "checkUserName"
-
-                    var checkBoxForm = document.createElement("form")
-                    checkBoxForm.id = "checkBoxForm" + i
-                    checkBoxForm.action = 'main.jsp'
                     
-                    var yearInput = document.createElement('input');
+                    var yearInput = document.createElement('input')
                     yearInput.value = year
                     yearInput.name = 'year'
                     yearInput.style.display = "none"
 
-                    var monthInput = document.createElement('input');
+                    var monthInput = document.createElement('input')
                     monthInput.value = month
                     monthInput.name = 'month'
                     monthInput.style.display = "none"
+                    
+                    var selectedUserIdxs = document.createElement("input")
+                    selectedUserIdxs.id = "selectedUserIdxs"
+                    selectedUserIdxs.type = "hidden"
+                    selectedUserIdxs.name = "selectedUserIdx_value"
+                    selectedUserIdxs.value = JSON.stringify(findUserIdx); 
 
                     var checkBox = document.createElement("input")
                     checkBox.className ="checkBox"
                     checkBox.name = "checkBox_value"
                     checkBox.type = "checkbox"
                     checkBox.value = findUserIdx[i]
-
+                    
                     var userName = document.createElement("label")
                     userName.className = "userNameList"
                     userName.innerHTML = findUserInfo[i]
 
-                    checkBox.addEventListener("click", showTeamMomverEvent)
+                    var usersCheckDiv = document.createElement("div")
+                    usersCheckDiv.className = "usersCheckDiv"
 
-                    checkBoxForm.append(checkBox,userName)
-                    checkBoxForm.appendChild(yearInput);
-                    checkBoxForm.appendChild(monthInput);
-                    user.appendChild(checkBoxForm)
-                    userList.appendChild(user)
-                    
+                    usersCheckDiv.append(checkBox, userName, yearInput, monthInput , selectedUserIdxs)
+                    checkBoxForm.appendChild(usersCheckDiv)
                 }
             }
+            // var checkBtn = document.createElement("button")
+            // checkBtn.type = "button"
+            // checkBtn.innerHTML = "확인"
+            // checkBtn.className = "checkBtn"
+
+            // checkBoxForm.appendChild(checkBtn)
+
+            // checkBtn.addEventListener("click" , showTeamMomverEvent)
+
+
+            console.log("checkBox_Value = " + checkBoxValue)
         }
+
+
 
         function createDayBox() { 
             var day = document.getElementById("day")
@@ -561,30 +571,49 @@ while(myContentSqlResult.next()){
             location.href = "userInfo.jsp"
         }
 
-        function showTeamMomverEvent(e){
+        function showTeamMomverEvent(){
         
             //김인수 라는 사람의 버튼을 체크 했을 때 DB에서 그 사람의 일정을 조회해서 페이지가 그 달로 로딩되고 firstDiv에 보여줘야 한다. 
             // 일단 체크박스를 클릭했을 때 main.jsp 페이지로 그 사람의 idx나 뭐 정보를 url로 보내서 그 정보를 가지고 다시 
             //조회해서 DB에 접근 후 그 달에 맞는 데이터를 가져와야한다.
             // DB가져오면서 firstDiv에 보여줘야한다.
+            
+            //체크 된거랑 상관없이 모든 인원의 idx를 jsp로 보내준다.
 
             var userCheckBoxes = document.querySelectorAll('.checkBox')
-            var selectedUserIndexes = [] 
-            var checkBox = e.target
-            var checkBoxValue = checkBox.value
-            var isChecked = checkBox.checked
-
+        
             for (var i = 0; i < userCheckBoxes.length; i++) {
-                var form = document.getElementById("checkBoxForm"+i)
+
                 
-                if (userCheckBoxes[i].checked){
-                    selectedUserIndexes.push(userCheckBoxes[i].value)
-                    form.submit()
+                var form = document.getElementById("checkBoxForm")
+                var checkBox = userCheckBoxes[i]
+                
+                if (checkBox.checked) {
+                    //여기서 체크된 모든 check 박스를 jsp로 보내줘야한다... 아ㅓㄸ
+                    console.log(checkBox.value)
+
+                    var checkBoxValue = checkBox.value
+                    localStorage.setItem("checkBoxValue",checkBox.value)
+                    localStorage.setItem("isChecked",checkBox.checked)
+                    // console.log("체크된 체크박스의 value 값: " + checkBoxValue)
+                    // form.submit()
                 }
             }
 
-            localStorage.setItem("isChecked",isChecked)
-            localStorage.setItem("checkBoxValue",checkBoxValue)
+            // for (var i = 0; i < userCheckBoxes.length; i++) {
+            //     var form = document.getElementById("checkBoxForm")
+                
+            //     if (userCheckBoxes[i].checked){
+            //         userCheckBoxes[i].value = checkBoxValue
+            
+            //         localStorage.setItem("checkBoxValue",checkBoxValue)
+            //         localStorage.setItem("isChecked",isChecked)
+            //         form.submit();
+            //     }
+            //     if(!userCheckBoxes[i].checked){
+            //         console.log("같은 박스가 두번 됐을 때 ")
+            //     }
+            // }
         }
 
         window.onload = function(){
@@ -603,11 +632,11 @@ while(myContentSqlResult.next()){
             nowDate = new Date(year, month, 1)
             updateYearMonth(year, month + 1)
             showContent(year, month + 1)
-
-            var checkBoxValue = localStorage.getItem("checkBoxValue");
-            var isChecked = localStorage.getItem("isChecked");
-
-
+            
+            var checkBoxValue = localStorage.getItem("checkBoxValue")
+            var isChecked = localStorage.getItem("isChecked")
+            
+            
             if (isChecked === "true") {
                 var userCheckBoxes = document.querySelectorAll('.checkBox');
                 for (var i = 0; i < userCheckBoxes.length; i++) {
@@ -616,14 +645,12 @@ while(myContentSqlResult.next()){
                     }
                 }
             }
-           
+        
+           //여기서 위의 체크박스들을 class를 가져와서 클릭된 check박스를 다시 클릭하면 value 값이 false로 나오게 해야한다.
+           //그리고 다시 url 주소가 http://13.124.75.178:8080/test3/jsp/viewPage/main.jsp?year=2023&month=10 이런식으로 나와야한다.
 
-            console.log(checkBoxValue)
-            console.log(isChecked)
-                
+            localStorage.clear()
             
-
-
         }
     </script>
 </body>
