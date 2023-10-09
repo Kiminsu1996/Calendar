@@ -151,7 +151,10 @@ if(idx != null){
 
 
         function goMainPageEvent(){
-            location.href="main.jsp"
+            var nowDate = new Date()
+            // main.jsp?year=2023&month=10
+            location.href="main.jsp?year=" + nowDate.getFullYear() + "&month=" + nowDate.getMonth()
+            
         }
 
         function deleteUserEvent(){

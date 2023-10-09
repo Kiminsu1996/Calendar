@@ -59,24 +59,14 @@ if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departme
     var isDuplicateId = <%=isDuplicateId%>
     var isDuplicatePhone = <%=isDuplicatePhone%>
 
-    function checkId(){
-        if(isDuplicateId && isDuplicatePhone){
-            alert("중복된 아이디와 전화번호가 있습니다. 변경해주세요.")
-            location.href = "../viewPage/singup.jsp"
-        }else if(isDuplicateId){
-            alert("중복된 아이디가 있습니다. 변경해주세요.")
-            location.href = "../viewPage/singup.jsp"
-        }else if(isDuplicatePhone){
-            alert("중복된 전화번호가 있습니다. 변경해주세요.")
-            location.href = "../viewPage/singup.jsp"
-        }else{
-            location.href="../../login.jsp"
-            localStorage.clear()
-        }
+    if(isDuplicateId){
+        alert("중복된 아이디가 있습니다. 변경해주세요.")
+        location.href = "../viewPage/singup.jsp"
+    }else if(isDuplicatePhone){
+        alert("중복된 전화번호가 있습니다. 변경해주세요.")
+        location.href = "../viewPage/singup.jsp"
+    }else{
+        location.href="../../login.jsp"
+        localStorage.clear()
     }
-        
-    window.onload = function(){
-        checkId()
-    }
-
 </script>

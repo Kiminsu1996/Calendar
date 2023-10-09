@@ -23,13 +23,13 @@ if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departme
 
     String idx= (String)session.getAttribute("idx");
 
-    String userInfo = "SELECT id FROM users WHERE id=?;";
+    String userInfo = "SELECT id FROM users WHERE id=?;"; 
     PreparedStatement userInfoQuery = connect.prepareStatement(userInfo);
     userInfoQuery.setString(1,idValue); 
     ResultSet userInfoResult = userInfoQuery.executeQuery();
 
     if(!userInfoResult.next()){
-        String sql =" UPDATE users SET id=? , password=? , name=? , department=? , position=? , phonenumber=?  WHERE idx=?;";
+        String sql =" UPDATE users SET id=? , password=? , name=? , department=? , position=? , phonenumber=?  WHERE idx=?;"; // 여기에 NOT id=? 이런식으로 수정해줘야 된다.
         PreparedStatement query = connect.prepareStatement(sql);
         query.setString(1,idValue);
         query.setString(2,pwValue);
@@ -41,7 +41,8 @@ if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departme
         query.executeUpdate();
     }else{
         isDuplicate = true;
-    }
+    } 
+    // 본인의 아이디는 포함되지 않게 체크하기 쿼리문 수정 
 }
 
 %>
@@ -49,17 +50,10 @@ if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departme
 <script>
     var isDuplicate = <%=isDuplicate%>
         
-    function checkId() {
-        if(isDuplicate) {
-            alert("중복된 아이디 입니다.")
-            location.href = "../viewPage/userInfo.jsp"
-        }else {
-            location.href = "../../login.jsp"
-        }
+    if(isDuplicate) {
+        alert("중복된 아이디 입니다.")
+        location.href = "../viewPage/userInfo.jsp"
+    }else {
+        location.href = "../../login.jsp"
     }
-
-    window.onload = function() {
-        checkId()
-    }
-        
 </script>

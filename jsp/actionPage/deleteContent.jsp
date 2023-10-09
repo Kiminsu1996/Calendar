@@ -33,15 +33,12 @@ query.executeUpdate();
 %>
 
 <script>
-        
-    window.onload = function(){
-        var dateEvent = <%=dateEvent%>
-        var dateToString = dateEvent.toString()
-        var sliceDateEvent = dateToString.split('-')
+    var dateEvent = <%=dateEvent%>
+    var dateToString = dateEvent.toString()
+    var sliceDateEvent = dateToString.split('-')
 
-        var year = parseInt(sliceDateEvent[0])
-        var month = parseInt(sliceDateEvent[1])
+    var year = parseInt(sliceDateEvent[0])
+    var month = parseInt(sliceDateEvent[1])
 
-        location.href="../viewPage/main.jsp?year=" + year + "&month=" + month
-    }
+    location.href="../viewPage/main.jsp?year=" + year + "&month=" + month
 </script>

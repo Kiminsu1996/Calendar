@@ -32,28 +32,20 @@ if(!contentValue.isEmpty() && !timeValue.isEmpty() && !dateValue.isEmpty()){
 %>
 
 <script>
-    function checkEmpty(){
-        var dateValue = '<%=dateValue%>'
-        var slicedDteValue = dateValue.split('-')
-    
-        var year = parseInt(slicedDteValue[0])
-        var month = parseInt(slicedDteValue[1])
-       
-        var contentValue = '<%=contentValue%>'
-        var timeValue = '<%=timeValue%>'
-    
-    
-        if(contentValue == "" && timeValue == ""){
-            alert("빈칸 없이 다 적어주세요.")
-        }else{
-            location.href="../viewPage/main.jsp?year=" + year + "&month=" + month
-        }
+    var dateValue = '<%=dateValue%>'
+    var slicedDteValue = dateValue.split('-')
 
-    }
-
-    window.onload = function(){
-        checkEmpty()
-    }
+    var year = parseInt(slicedDteValue[0])
+    var month = parseInt(slicedDteValue[1])
     
+    var contentValue = '<%=contentValue%>'
+    var timeValue = '<%=timeValue%>'
+
+
+    if(contentValue == "" && timeValue == ""){
+        alert("빈칸 없이 다 적어주세요.")
+    }else{
+        location.href="../viewPage/main.jsp?year=" + year + "&month=" + month
+    }
 </script>
 

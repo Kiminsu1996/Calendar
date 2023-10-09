@@ -4,7 +4,7 @@
 <%@ page import="java.sql.PreparedStatement"%>
 <%@ page import="java.sql.ResultSet"%>
 <%@ page import="java.util.ArrayList"%>
-<%@ page import="java.util.Date" %>
+
 
 <%
 Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234"); 
@@ -19,12 +19,65 @@ String monthUrl = request.getParameter("month");
 String checkBoxValue = request.getParameter("checkBox_value");
 String selectedUsersValue = request.getParameter("selectedUserIdx_value");
 
+
 if(idx == null || idx.isEmpty()){
     response.sendRedirect("../../login.jsp");
 }
 
+//선택된 팀원들의 일정을 보여주는 쿼리문
+ArrayList usersContentInfoEvent = new ArrayList<String>();
+ArrayList usersContentEvent = new ArrayList<String>();
+ArrayList usersDateEvent = new ArrayList<String>();
+ArrayList usersTimeEvent = new ArrayList<String>();
+ArrayList usersIdxEvent = new ArrayList<String>();
+ArrayList usersNameEvent = new ArrayList<String>();
 
-//같은 부서, 직책이 팀원인 사람들을 찾는 쿼리문 / 팀장일때만 
+if (selectedUsersValue != null && !selectedUsersValue.isEmpty()) {
+    String[] selectedUsers = selectedUsersValue.split(",");
+
+    for (String checkedUser : selectedUsers) {
+        String checkUserSql = "SELECT * FROM events WHERE users_idx=? AND YEAR(date) = ? AND MONTH(date) = ? ORDER BY time;";
+        PreparedStatement checkUserQuery = connect.prepareStatement(checkUserSql);
+        checkUserQuery.setString(1,checkedUser);
+        checkUserQuery.setString(2,yearUrl);
+        checkUserQuery.setString(3,monthUrl);
+        ResultSet checkUserResult = checkUserQuery.executeQuery();
+    
+    
+        while(checkUserResult.next()){
+            String usersContent = "\"" + checkUserResult.getString(3)+ "\""; 
+            String usersDate = "\"" + checkUserResult.getString(4) + "\""; 
+            String usersTime = "\"" + checkUserResult.getString(5) + "\""; 
+            String usersIdx = checkUserResult.getString(2); 
+
+            usersContentEvent.add(usersContent);
+            usersDateEvent.add(usersDate);
+            usersTimeEvent.add(usersTime);
+            usersIdxEvent.add(usersIdx);
+
+            usersContentInfoEvent.add(usersContentEvent);
+            usersContentInfoEvent.add(usersDateEvent);
+            usersContentInfoEvent.add(usersTimeEvent);
+            usersContentInfoEvent.add(usersIdxEvent);
+
+            String checkUserNameSql = "SELECT * FROM users WHERE idx=?;";
+            PreparedStatement checkUserNameQuery = connect.prepareStatement(checkUserNameSql);
+            checkUserNameQuery.setString(1,usersIdx);
+            ResultSet checkUserNameResult = checkUserNameQuery.executeQuery();
+
+            while(checkUserNameResult.next()){
+                String userNameData = "\"" + checkUserNameResult.getString(4) + "\""; 
+                if (!usersNameEvent.contains(userNameData)) {
+                    usersNameEvent.add(userNameData);
+                }
+            }
+        }
+    }
+}
+
+
+
+//같은 부서, 직책이 팀원인 사람들을 찾는 쿼리문 / 팀장일때만  //권한 체크 하기 if문으로 팀장인지 아닌지 체크하기 
 String findUserSql = "SELECT * FROM users WHERE department=? AND position=?;";
 PreparedStatement findUserQuery = connect.prepareStatement(findUserSql);
 findUserQuery.setString(1,department);
@@ -59,7 +112,7 @@ ArrayList timeEvent = new ArrayList<String>();
 ArrayList contentEvnet = new ArrayList<String>();
 
 while(myContentSqlResult.next()){
-        String eventIdxData = "\"" + myContentSqlResult.getString(1) + "\""; 
+        String eventIdxData = myContentSqlResult.getString(1); 
         String userContentData = "\"" + myContentSqlResult.getString(3) + "\""; 
         String dateData = "\"" + myContentSqlResult.getString(4)+ "\""; 
         String timeData= "\"" + myContentSqlResult.getString(5) + "\""; 
@@ -74,7 +127,6 @@ while(myContentSqlResult.next()){
         eventInfo.add(timeEvent);
         eventInfo.add(eventIdxEvent);
     }
-
 %>
 
 <head>
@@ -146,16 +198,11 @@ while(myContentSqlResult.next()){
     </div>
 
     <script>
-        var selectedUsersValue = <%=selectedUsersValue%>
-        console.log(selectedUsersValue)
-    
+        
+        var selectedUsersValue = "<%=selectedUsersValue%>"
+        console.log("selectedUsersValue =" + selectedUsersValue)
+        
         var nowDate = new Date()
-       
-        function checkLogin(){
-            var idx = <%=idx%>
-            if(!(idx > 1)) return location.href = "../../login.jsp"
-        }
-
 
         //팀장일 때 팀원들을 보여주는 함수  
         function createTeamUsers(year, month){
@@ -168,8 +215,7 @@ while(myContentSqlResult.next()){
             var userList = document.getElementById("userList")
             var year = year
             var month = month + 1
-            var checkBoxValue = <%=checkBoxValue%>
-             
+
             for (var i = 0; i < findUserInfo.length; i++) {
                 if (position > 1 && findUserDepartment[i] == department) {
                     
@@ -187,8 +233,8 @@ while(myContentSqlResult.next()){
                     selectedUserIdxs.id = "selectedUserIdxs"
                     selectedUserIdxs.type = "hidden"
                     selectedUserIdxs.name = "selectedUserIdx_value"
-                    selectedUserIdxs.value = JSON.stringify(findUserIdx); 
-
+                   
+                    
                     var checkBox = document.createElement("input")
                     checkBox.className ="checkBox"
                     checkBox.name = "checkBox_value"
@@ -198,27 +244,16 @@ while(myContentSqlResult.next()){
                     var userName = document.createElement("label")
                     userName.className = "userNameList"
                     userName.innerHTML = findUserInfo[i]
-
+                    
                     var usersCheckDiv = document.createElement("div")
                     usersCheckDiv.className = "usersCheckDiv"
-
+                    
                     usersCheckDiv.append(checkBox, userName, yearInput, monthInput , selectedUserIdxs)
                     checkBoxForm.appendChild(usersCheckDiv)
                 }
             }
-            // var checkBtn = document.createElement("button")
-            // checkBtn.type = "button"
-            // checkBtn.innerHTML = "확인"
-            // checkBtn.className = "checkBtn"
-
-            // checkBoxForm.appendChild(checkBtn)
-
-            // checkBtn.addEventListener("click" , showTeamMomverEvent)
-
-
-            console.log("checkBox_Value = " + checkBoxValue)
         }
-
+        
 
 
         function createDayBox() { 
@@ -286,8 +321,19 @@ while(myContentSqlResult.next()){
          //일정을 캘린더에 보여주는 함수
          function showContent(year, month) { 
             var firstDivs = document.querySelectorAll(".firstDiv")
-            var eventInfo = <%=eventInfo%>
-            var userName = <%=userName%> 
+            //로그인한 사람의 이름과, 일정에 대한 모든 정보들
+            var eventInfo = <%=eventInfo%> 
+            var userName = <%=userName%>  
+
+            //팀장일 때 체크된 사람들의 이름과 모든 일정들
+            var usersContentInfoEvent = <%=usersContentInfoEvent%>
+            var usersNameEvent = <%=usersNameEvent%> 
+
+            console.log(eventInfo)
+            console.log(userName)
+
+            console.log(usersContentInfoEvent)
+            console.log(usersNameEvent)
 
             for (var i = 0; i < firstDivs.length; i++) {
                 var firstDivDate = firstDivs[i].getAttribute("data-date") 
@@ -571,50 +617,26 @@ while(myContentSqlResult.next()){
             location.href = "userInfo.jsp"
         }
 
+        //팀원들의 이름을 보여주는 이벤트
         function showTeamMomverEvent(){
-        
-            //김인수 라는 사람의 버튼을 체크 했을 때 DB에서 그 사람의 일정을 조회해서 페이지가 그 달로 로딩되고 firstDiv에 보여줘야 한다. 
-            // 일단 체크박스를 클릭했을 때 main.jsp 페이지로 그 사람의 idx나 뭐 정보를 url로 보내서 그 정보를 가지고 다시 
-            //조회해서 DB에 접근 후 그 달에 맞는 데이터를 가져와야한다.
-            // DB가져오면서 firstDiv에 보여줘야한다.
-            
-            //체크 된거랑 상관없이 모든 인원의 idx를 jsp로 보내준다.
-
             var userCheckBoxes = document.querySelectorAll('.checkBox')
-        
+            var selectedUserIdxs = document.getElementById("selectedUserIdxs")
+            var checkBox = []
+
             for (var i = 0; i < userCheckBoxes.length; i++) {
-
                 
-                var form = document.getElementById("checkBoxForm")
-                var checkBox = userCheckBoxes[i]
-                
-                if (checkBox.checked) {
-                    //여기서 체크된 모든 check 박스를 jsp로 보내줘야한다... 아ㅓㄸ
-                    console.log(checkBox.value)
-
-                    var checkBoxValue = checkBox.value
-                    localStorage.setItem("checkBoxValue",checkBox.value)
-                    localStorage.setItem("isChecked",checkBox.checked)
-                    // console.log("체크된 체크박스의 value 값: " + checkBoxValue)
-                    // form.submit()
+                if (userCheckBoxes[i].checked) {
+                    checkBox.push(userCheckBoxes[i].value)
                 }
-            }
+            } 
 
-            // for (var i = 0; i < userCheckBoxes.length; i++) {
-            //     var form = document.getElementById("checkBoxForm")
-                
-            //     if (userCheckBoxes[i].checked){
-            //         userCheckBoxes[i].value = checkBoxValue
+            selectedUserIdxs.value = checkBox
+            document.getElementById("checkBoxForm").submit()
             
-            //         localStorage.setItem("checkBoxValue",checkBoxValue)
-            //         localStorage.setItem("isChecked",isChecked)
-            //         form.submit();
-            //     }
-            //     if(!userCheckBoxes[i].checked){
-            //         console.log("같은 박스가 두번 됐을 때 ")
-            //     }
-            // }
+            sessionStorage.setItem("checkBoxValue", checkBox)
+            sessionStorage.setItem("isChecked", true)
         }
+
 
         window.onload = function(){
             // URL에서 연도와 월을 읽어오기
@@ -626,31 +648,24 @@ while(myContentSqlResult.next()){
             var month = parseInt(monthUrl) - 1
 
             createTeamUsers(year, month)
-            checkLogin()
             createDayBox()
 
             nowDate = new Date(year, month, 1)
             updateYearMonth(year, month + 1)
             showContent(year, month + 1)
             
-            var checkBoxValue = localStorage.getItem("checkBoxValue")
-            var isChecked = localStorage.getItem("isChecked")
+            // var checkBoxValue = sessionStorage.getItem("checkBoxValue")
+            // var isChecked = sessionStorage.getItem("isChecked")
             
             
-            if (isChecked === "true") {
-                var userCheckBoxes = document.querySelectorAll('.checkBox');
-                for (var i = 0; i < userCheckBoxes.length; i++) {
-                    if(userCheckBoxes[i].value == checkBoxValue ){
-                        userCheckBoxes[i].checked = true;
-                    }
-                }
-            }
-        
-           //여기서 위의 체크박스들을 class를 가져와서 클릭된 check박스를 다시 클릭하면 value 값이 false로 나오게 해야한다.
-           //그리고 다시 url 주소가 http://13.124.75.178:8080/test3/jsp/viewPage/main.jsp?year=2023&month=10 이런식으로 나와야한다.
-
-            localStorage.clear()
-            
+            // if (isChecked) {
+            //     var userCheckBoxes = document.querySelectorAll('.checkBox');
+            //     for (var i = 0; i < userCheckBoxes.length; i++) {
+            //         if(userCheckBoxes[i].value == checkBoxValue ){
+            //             userCheckBoxes[i].checked = true;
+            //         }
+            //     }
+            // }
         }
     </script>
 </body>

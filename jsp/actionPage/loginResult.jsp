@@ -52,23 +52,20 @@ if(!idValue.isEmpty() && !pwValue.isEmpty()){
 %>
 
 <script>
-    function checkLogin(){
-        var idValue = "<%=idValue%>"
-        var pwValue = "<%=pwValue%>"
-        var idList = <%=idList%>
-        var pwList = <%=pwList%>  
-        
-        if(idValue == idList[0] && pwValue == pwList[0]){
-            var nowDate = new Date()
-            var year = nowDate.getFullYear()
-            var month = nowDate.getMonth() + 1
-            location.href = `../viewPage/main.jsp?year=` + year + `&month=` +month
-        }else{
-            alert("아이디와 비밀번호를 다시 확인해 주세요.")
-            location.href="../../login.jsp"
-        }
+  
+    var idValue = "<%=idValue%>"
+    var pwValue = "<%=pwValue%>"
+    var idList = <%=idList%>
+    var pwList = <%=pwList%>  
+    
+    if(idValue == idList[0] && pwValue == pwList[0]){
+        var nowDate = new Date()
+        var year = nowDate.getFullYear()
+        var month = nowDate.getMonth() + 1
+        location.href = `../viewPage/main.jsp?year=` + year + `&month=` +month
+    }else{
+        alert("아이디와 비밀번호를 다시 확인해 주세요.")
+        location.href="../../login.jsp"
     }
-    window.onload = function(){
-        checkLogin()
-    }
+
 </script>
