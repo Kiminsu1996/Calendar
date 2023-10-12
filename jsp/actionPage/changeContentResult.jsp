@@ -7,9 +7,9 @@
 
 <% 
 request.setCharacterEncoding("UTF-8");
-String contentValue = request.getParameter("content_value");
-String dateValue = request.getParameter("date_value"); 
-String timeValue = request.getParameter("time_value"); 
+String contentValue = request.getParameter("contents_value");
+String dateValue = request.getParameter("dates_value"); 
+String timeValue = request.getParameter("times_value"); 
 
 
 if(!contentValue.isEmpty() && !dateValue.isEmpty() && !timeValue.isEmpty()){

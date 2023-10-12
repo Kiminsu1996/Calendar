@@ -148,7 +148,7 @@ p{
 
 #contentDetails{
     width: 90%;
-    max-height: 300px;
+    max-height: 250px;
     overflow-y: auto;
 }
 
