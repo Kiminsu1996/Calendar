@@ -48,11 +48,12 @@ if (selectedUsersValue != null && !selectedUsersValue.isEmpty()) {
             String usersDate = "\"" + checkUserResult.getString(4) + "\""; 
             String usersTime = "\"" + checkUserResult.getString(5) + "\""; 
             String usersIdx = checkUserResult.getString(2); 
+            String eventsIdx = checkUserResult.getString(1); 
 
             usersContentEvent.add(usersContent);
             usersDateEvent.add(usersDate);
             usersTimeEvent.add(usersTime);
-            usersIdxEvent.add(usersIdx);
+            usersIdxEvent.add(eventsIdx);
 
             usersContentInfoEvent.add(usersContentEvent);
             usersContentInfoEvent.add(usersDateEvent);
@@ -509,7 +510,7 @@ while(myContentSqlResult.next()){
                     var eventContent = eventInfo[0][i] //내용
                     var processEventTime = eventTime.split(":", 2) // 시간 데이터 가공
                     var eventIdx = eventInfo[3][i]
-
+                  
                     // 유저의 일정이 표시되는 자식 div 
                     var eventElements = document.createElement("div")
                     eventElements.className = "eventElements"
@@ -530,6 +531,7 @@ while(myContentSqlResult.next()){
                     modifyContentATag.type = "button"
                     modifyContentATag.setAttribute("eventContent",eventContent)
                     modifyContentATag.setAttribute("eventTime",eventTime)
+                    modifyContentATag.setAttribute("eventIdx",eventIdx)
                     modifyContentATag.addEventListener("click",changeContentEvent)
                         
                     var deleteContentATag = document.createElement("a")
@@ -645,9 +647,6 @@ while(myContentSqlResult.next()){
         function changeContentEvent(e){
             var eventInfo = <%=eventInfo%>
             var eventIdxInput = document.getElementById("eventIdx");
-            var eventIdx = eventIdxInput.value;
-
-            console.log(eventIdx) // 여기 값이 54만 나오는데 왜 54만 나오는지 확인하자.
 
             var contentDetailModal = document.getElementById("contentDetailModal")
             contentDetailModal.style.display="none"
@@ -661,6 +660,9 @@ while(myContentSqlResult.next()){
 
             var contentDetailMonth = contentDetailModal.getAttribute("data-month")
             var contentDetailDay = contentDetailModal.getAttribute("data-day")
+
+            var eventIdx = e.target.getAttribute("eventIdx")
+            eventIdxInput.value = eventIdx
 
             //여기부터 지워도되는데 일단 테스트
             var content = document.getElementById("content")
@@ -757,9 +759,8 @@ while(myContentSqlResult.next()){
                 var checkBtn = document.querySelector(".checkBtn")
                 checkBtn.style.display = "none"
             }
-
-           
         }
+        
     </script>
 </body>
 
