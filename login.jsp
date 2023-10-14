@@ -24,7 +24,7 @@
                 <a href="jsp/viewPage/singup.jsp">회원가입</a>
             </div>
             <div id="loginBtnDiv">
-                <button id="loginBtn" type="submit">확인</button>
+                <button id="loginBtn" type="button" onclick="loginBtnClickEvent()">확인</button>
             </div>
         </form>
     </main>
@@ -34,15 +34,16 @@
             loginBtn.addEventListener("click",loginBtnClickEvent)
         }
 
-        function loginBtnClickEvent(e){
+        function loginBtnClickEvent(){
             var userId = document.getElementById("userId")
             var userPw = document.getElementById("userPw")
 
             if(userId.value === "" || userPw.value === ""){
-                e.preventDefault();
                 alert("빈칸 없이 다 적어주세요.")
             }
-        } // 여기 수정하기 html 확인 버튼 type을 button으로 하고 js에서 submit을 준다.
+            
+            document.getElementById("formShare").submit()
+        } 
 
         window.onload = function(){
             checkEmpty()
