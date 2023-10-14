@@ -28,7 +28,7 @@ if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departme
     Class.forName("com.mysql.jdbc.Driver");
     Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234");
 
-   
+   //유저의 정보를 찾는 쿼리문
     String userInfo = "SELECT * FROM users WHERE idx=?;"; 
     PreparedStatement userInfoQuery = connect.prepareStatement(userInfo);
     userInfoQuery.setString(1,idx); 
@@ -38,7 +38,7 @@ if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departme
         String userIdData = userInfoResult.getString(2); 
         String userPhonenumberData = userInfoResult.getString(7); 
 
-        //아이디와, 전화번호 수정하지 않고 이외의 것을 수정하면   
+        //아이디와, 전화번호 수정하지 않고 이외의 것을 수정하면 업데이트 되는 쿼리문 
         if(phoneValue.equals(userPhonenumberData) && idValue.equals(userIdData)){
             String sql =" UPDATE users SET password=? , name=? , department=? , position=? WHERE idx=?;"; 
             PreparedStatement query = connect.prepareStatement(sql);
@@ -51,16 +51,19 @@ if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departme
 
         }
 
-        //전화번호를 수정하려고 하면 
+        //전화번호를 수정하려고 할 때
         if(!phoneValue.equals(userPhonenumberData)){
             
+            //중복된 번호를 찾는 쿼리문
             String userInfos = "SELECT phonenumber FROM users WHERE phonenumber=?;"; 
             PreparedStatement userInfosQuery = connect.prepareStatement(userInfos); 
             userInfosQuery.setString(1,phoneValue);
             ResultSet userInfosResult = userInfosQuery.executeQuery();
 
-            //중복된 번호가 없으면 
+            //중복된 번호가 없으면 실행
             if(!userInfosResult.next()){
+
+                //수정된 정보를 업데이트하는 쿼리문
                 String sqls =" UPDATE users SET id=? , password=? , name=? , department=? , position=? , phonenumber=?  WHERE idx=?;";
                 PreparedStatement querys = connect.prepareStatement(sqls);
                 querys.setString(1,idValue);
@@ -76,16 +79,19 @@ if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departme
             }
         }
 
-        //아이디를 수정하려고 하면
+        //아이디를 수정하려고 할 때 
         if(!idValue.equals(userIdData)){
             
+            //중복된 아이디를 찾는 쿼리문
             String userInfos = "SELECT id FROM users WHERE id=?;"; 
             PreparedStatement userInfosQuery = connect.prepareStatement(userInfos); 
             userInfosQuery.setString(1,idValue);
             ResultSet userInfosResult = userInfosQuery.executeQuery();
 
-            //중복된 아이디가 없으면 
+            //중복된 아이디가 없으면 실행
             if(!userInfosResult.next()){
+
+                //수정된 정보를 업데이트하는 쿼리문
                 String sqls =" UPDATE users SET id=? , password=? , name=? , department=? , position=? , phonenumber=?  WHERE idx=?;";
                 PreparedStatement querys = connect.prepareStatement(sqls);
                 querys.setString(1,idValue);

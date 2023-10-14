@@ -22,11 +22,13 @@ if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departme
     Class.forName("com.mysql.jdbc.Driver");
     Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234");
 
+    //아이디를 찾는 쿼리문
     String userInfo = "SELECT id FROM users WHERE id=?;";
     PreparedStatement userInfoQuery = connect.prepareStatement(userInfo);
     userInfoQuery.setString(1,idValue); 
     ResultSet userInfoResult = userInfoQuery.executeQuery();
   
+    //핸드폰 번호를 찾는 쿼리문
     String phoneInfo = "SELECT phonenumber FROM users WHERE phonenumber=?;";
     PreparedStatement phoneQuery = connect.prepareStatement(phoneInfo);
     phoneQuery.setString(1,phoneValue); 
@@ -40,6 +42,7 @@ if(!idValue.isEmpty() && !pwValue.isEmpty() && !nameValue.isEmpty() && !departme
         isDuplicatePhone = true;
     }
 
+    //중복된 아이디와 전화번호가 없으면 회원정보를 생성하는 쿼리문
     if (!isDuplicateId && !isDuplicatePhone){
         String sql ="INSERT INTO users (id, password,name,department,position,phoneNumber) VALUES(?,?,?,?,?,?);";
         PreparedStatement query = connect.prepareStatement(sql);

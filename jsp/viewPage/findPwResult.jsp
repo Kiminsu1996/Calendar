@@ -14,10 +14,12 @@ String phoneValue=request.getParameter("phone_value");
 ArrayList userInfo = new ArrayList<String>();
 ArrayList pwList = new ArrayList<String>();
 
+
 if(!idValue.isEmpty() && !nameValue.isEmpty() && !phoneValue.isEmpty()){
     Class.forName("com.mysql.jdbc.Driver");
     Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234");
-
+    
+    //유저의 비밀번호를 찾는 쿼리문
     String sql ="SELECT * FROM users WHERE id=? AND name=? AND phonenumber=?;"; 
     PreparedStatement query = connect.prepareStatement(sql);   
     query.setString(1,idValue); 
@@ -57,6 +59,7 @@ if(!idValue.isEmpty() && !nameValue.isEmpty() && !phoneValue.isEmpty()){
     </main>
     <script>
 
+        //비밀번호를 보여주는 함수
         function showUserPw(){
             var showUserPw = document.getElementById("showUserPw")
             showUserPw.style.marginBottom ="10%"

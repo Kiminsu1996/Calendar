@@ -12,7 +12,8 @@ String idx = request.getParameter("idx");
 
 Class.forName("com.mysql.jdbc.Driver"); 
 Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234"); 
-  
+
+//로그인한 사람의 정보를 찾는 쿼리문 date를 가져오기 위해서 사용
 String myContentSql = "SELECT * FROM events WHERE idx=?;";
 PreparedStatement myContentQuery = connect.prepareStatement(myContentSql);
 myContentQuery.setString(1,idx);
@@ -25,6 +26,7 @@ while(myContentSqlResult.next()){
     dateEvent.add(dateData); 
 }
 
+//로그인 한 사람의 일정을 삭제하는 쿼리문
 String sql ="DELETE FROM events WHERE idx=?;";
 PreparedStatement query = connect.prepareStatement(sql);   
 query.setString(1,idx);

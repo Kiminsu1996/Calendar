@@ -16,6 +16,7 @@ if(!nameValue.isEmpty() && !phoneValue.isEmpty()){
     Class.forName("com.mysql.jdbc.Driver");
     Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234");
 
+    //아이디를 찾는 쿼리문
     String sql ="SELECT * FROM users WHERE name=? AND phonenumber=?;"; 
     PreparedStatement query = connect.prepareStatement(sql);   
     query.setString(1,nameValue); 
@@ -50,6 +51,8 @@ if(!nameValue.isEmpty() && !phoneValue.isEmpty()){
         </div>
     </main>
     <script>
+
+        //아이디를 보여주는 함수
         function showUserId(){
             var showUserId = document.getElementById("showUserId")
             showUserId.style.marginBottom = "10%"

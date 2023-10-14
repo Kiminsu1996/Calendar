@@ -21,6 +21,7 @@ if(!idValue.isEmpty() && !pwValue.isEmpty()){
     Class.forName("com.mysql.jdbc.Driver"); 
     Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234");
 
+    //사용자가 입력한 id와 pw가 DB에 있는지 찾는 쿼리문
     String sql ="SELECT * FROM users WHERE id=? AND password=?;"; 
     PreparedStatement query = connect.prepareStatement(sql);   
     query.setString(1,idValue); 
@@ -40,6 +41,7 @@ if(!idValue.isEmpty() && !pwValue.isEmpty()){
         idList.add(userIdData);
         pwList.add(userPwData);
 
+        //로그인한 사람의 정보를 세션으로 보내기
         session.setAttribute("idx", userIdxData);
         session.setAttribute("id", userIdData);
         session.setAttribute("name", userName);

@@ -62,7 +62,7 @@
         </form>
     </main>
     <script>
-
+        //회원가입에 관한 정보를 확인하는 이벤트
          function checkSingupEvent(){
             var userId = document.getElementById("userId")
             var userPw = document.getElementById("userPw")
@@ -112,6 +112,7 @@
             }
         }
 
+        //회원가입 실패 시 기존 데이터 가져오는 함수 
         function restoreInputValues() {
             var userId = document.getElementById("userId");
             var userPw = document.getElementById("userPw");

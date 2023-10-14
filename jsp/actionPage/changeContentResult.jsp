@@ -18,6 +18,7 @@ if(!contentValue.isEmpty() && !dateValue.isEmpty() && !timeValue.isEmpty()){
     
     String eventIdx = request.getParameter("eventIdx");
 
+    //일정을 업데이트하는 쿼리문
     String sql = "UPDATE events SET content=?, date=? , time=? WHERE idx=?;";
     PreparedStatement query = connect.prepareStatement(sql);
     query.setString(1,contentValue);

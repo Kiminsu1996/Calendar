@@ -19,6 +19,7 @@ if(!contentValue.isEmpty() && !timeValue.isEmpty() && !dateValue.isEmpty()){
 
     String userIdx = (String)session.getAttribute("idx");
 
+    //일정 생성하는 쿼리문
     String sql = "INSERT INTO events (users_idx,content,date,time) VALUES(?,?,?,?);";
     PreparedStatement query = connect.prepareStatement(sql);
     query.setString(1,userIdx);

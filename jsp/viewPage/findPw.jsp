@@ -29,11 +29,14 @@
         </form>
     </main>
     <script>
+        
+        //빈값 체크 함수 
         function checkEmpty(){
             var checkPwBtn = document.querySelector(".emptyCheck")
             checkPwBtn.addEventListener("click",checkPwBtnEvent)
         }
 
+        //정보를 제대로 입력했는지 체크하는 함수
         function checkPwBtnEvent(e){
             var userId = document.getElementById("userId")
             var userName = document.getElementById("userName")
