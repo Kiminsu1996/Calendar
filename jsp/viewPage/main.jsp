@@ -309,6 +309,9 @@ while(myContentSqlResult.next()){
 
          //form 데이터를 보내는 함수 
         function sendForm(method, url, sendData){
+            var year = document.getElementById('yearInput').value;
+            var month = document.getElementById('monthInput').value;
+
             var form = document.createElement("form")
             form.method = method
             form.action = url
@@ -321,13 +324,12 @@ while(myContentSqlResult.next()){
                 var input = document.createElement('input') ;
                 input.name = keyValue;
                 input.value = realValue;
-                
+
                 form.append(input);
             }
             
-
             document.body.appendChild(form)
-           
+
             form.submit()
         }
 
@@ -610,12 +612,14 @@ while(myContentSqlResult.next()){
         
        //일정 자세히 보기 모달창 닫기 이벤트
         function detailMoadCloseEvent() {
+            //일정 자세히 보기 form 
             var contentDetailModal = document.getElementById("contentDetailModal")
             contentDetailModal.style.display ="none"
         }
 
          // 모달 창 닫기 이벤트
          function closeModalEvent() {
+            //일정 입력 form 
             var inputMySchedule = document.getElementById("inputMySchedule")
             inputMySchedule.style.display = "none"
         }
@@ -664,7 +668,6 @@ while(myContentSqlResult.next()){
             var eventIdx = e.target.getAttribute("eventIdx")
             eventIdxInput.value = eventIdx
 
-            //여기부터 지워도되는데 일단 테스트
             var content = document.getElementById("content")
             content.name = "contents_value"
 
@@ -673,7 +676,6 @@ while(myContentSqlResult.next()){
 
             var modalDates = document.getElementById("modalDates")
             modalDates.name = "dates_value"
-            // 여기까지
 
             var modalDate = document.getElementById("modalDate")
             modalDate.innerHTML = contentDetailMonth + "월" + contentDetailDay + "일"
@@ -713,27 +715,30 @@ while(myContentSqlResult.next()){
         //팀원들의 이름을 보여주는 이벤트
         function showTeamMomverEvent(){
             var userCheckBoxes = document.querySelectorAll('.checkBox')
-
-            var month = document.getElementById('monthInput').value;
             var year = document.getElementById('yearInput').value;
+            var month = document.getElementById('monthInput').value;
             
             var checkBox = []
-
             for (var i = 0; i < userCheckBoxes.length; i++) {
                 if (userCheckBoxes[i].checked) {
                     checkBox.push(userCheckBoxes[i].value)
                 }
-            } 
-    
-            const sendData = {
-                year : year,
-                month : month,
-                selectedUserIdx_value : checkBox
+                
+                if (checkBox.length > 0) {
+                    const sendData = {
+                            year : year,
+                            month : month,
+                            selectedUserIdx_value : checkBox
+                        }
+
+                    sendForm('GET', '/test3/jsp/viewPage/main.jsp', sendData)
+
+                }else{
+                    location.href = "main.jsp?year=" + year + "&month=" + month
+                }
             }
-
-
-            sendForm('GET', '/test3/jsp/viewPage/main.jsp', sendData)
             
+            localStorage.setItem('checkBoxState', JSON.stringify(checkBox))
         }
 
 
@@ -759,8 +764,23 @@ while(myContentSqlResult.next()){
                 var checkBtn = document.querySelector(".checkBtn")
                 checkBtn.style.display = "none"
             }
+
+            var checkBoxState = localStorage.getItem('checkBoxState')
+
+            if (checkBoxState) {
+                var checkBoxState = JSON.parse(checkBoxState)
+                var userCheckBoxes = document.querySelectorAll('.checkBox')
+
+                for (var i = 0; i < userCheckBoxes.length; i++) {
+                    if (checkBoxState.includes(userCheckBoxes[i].value)) {
+                        userCheckBoxes[i].checked = true;
+                    }
+                }
+            }
+
+            localStorage.clear()
         }
-        
+
     </script>
 </body>
 

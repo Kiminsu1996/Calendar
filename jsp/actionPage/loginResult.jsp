@@ -62,7 +62,7 @@ if(!idValue.isEmpty() && !pwValue.isEmpty()){
         var nowDate = new Date()
         var year = nowDate.getFullYear()
         var month = nowDate.getMonth() + 1
-        location.href = `../viewPage/main.jsp?year=` + year + `&month=` +month
+        location.href = `../viewPage/main.jsp?year=` + year + `&month=` + month
     }else{
         alert("아이디와 비밀번호를 다시 확인해 주세요.")
         location.href="../../login.jsp"

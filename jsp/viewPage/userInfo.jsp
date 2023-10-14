@@ -51,7 +51,7 @@ if(idx != null){
 
             <div class="user id">
                 <label>아이디</label>
-                <input id="userId" type="text" placeholder="5~20글자 사이의 ID입력" name="id_value"/>
+                <input id="userId" type="text" placeholder="5~20글자 사이의 ID입력" name="id_value" />
             </div>
 
             <div class="user pw">
@@ -118,6 +118,7 @@ if(idx != null){
         }
 
         function checkUserInfoEvent(){
+            var idxList = <%=idxList%>
             var userId = document.getElementById("userId")
             var userPw = document.getElementById("userPw")
             var userFindPw = document.getElementById("userFindPw")
@@ -149,11 +150,11 @@ if(idx != null){
             }
         }
 
-
         function goMainPageEvent(){
             var nowDate = new Date()
-            // main.jsp?year=2023&month=10
-            location.href="main.jsp?year=" + nowDate.getFullYear() + "&month=" + nowDate.getMonth()
+            var currentMonth = nowDate.getMonth() + 1
+
+            location.href="main.jsp?year=" + nowDate.getFullYear() + "&month=" + currentMonth
             
         }
 

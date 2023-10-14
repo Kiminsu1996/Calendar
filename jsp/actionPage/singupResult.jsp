@@ -8,12 +8,12 @@
 
 <% 
 request.setCharacterEncoding("UTF-8");
-String idValue=request.getParameter("id_value"); 
-String pwValue=request.getParameter("pw_value"); 
-String nameValue=request.getParameter("name_value");
-String departmentValue=request.getParameter("department_value"); 
-String positionValue=request.getParameter("position_value"); 
-String phoneValue=request.getParameter("phone_value"); 
+String idValue = request.getParameter("id_value"); 
+String pwValue = request.getParameter("pw_value"); 
+String nameValue = request.getParameter("name_value");
+String departmentValue = request.getParameter("department_value"); 
+String positionValue = request.getParameter("position_value"); 
+String phoneValue = request.getParameter("phone_value"); 
 
 boolean isDuplicateId = false;
 boolean isDuplicatePhone = false;
