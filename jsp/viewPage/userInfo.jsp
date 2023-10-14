@@ -13,6 +13,7 @@ if(idx != null){
     Class.forName("com.mysql.jdbc.Driver");
     Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/calendar","stageus","1234"); 
 
+    //로그인한 유저의 정보를 찾는 쿼리문
     String sql ="SELECT * FROM users WHERE idx=?;"; 
     PreparedStatement query = connect.prepareStatement(sql); 
     query.setString(1, idx); 
@@ -102,21 +103,23 @@ if(idx != null){
     </main>
     <script>
 
+        //유저의 정보를 보여주는 함수 
         function showUserInfo(){
             var idxList = <%=idxList%>;
             var userInfos = ["userId", "userPw", "userName", "userDepartment", "userPosition", "userPhone"];
 
             for (var i = 0; i < userInfos.length; i++) {
-                var userInfo = userInfos[i];
-                var dataBaseValue = idxList[i];
-                var inputUserInfo = document.getElementById(userInfo);
-
+                var dataBaseValue = idxList[i]
+                var userInfo = userInfos[i]
+                var inputUserInfo = document.getElementById(userInfo)
+                
                 if (inputUserInfo) {
                     inputUserInfo.value = dataBaseValue;
                 }
             }
         }
 
+        //입력된 데이터를 체크하는 함수
         function checkUserInfoEvent(){
             var idxList = <%=idxList%>
             var userId = document.getElementById("userId")
@@ -150,6 +153,7 @@ if(idx != null){
             }
         }
 
+        //뒤로가는 함수
         function goMainPageEvent(){
             var nowDate = new Date()
             var currentMonth = nowDate.getMonth() + 1
@@ -158,6 +162,7 @@ if(idx != null){
             
         }
 
+        //회원탈퇴를 원하는지 물어보는 하는 함수
         function deleteUserEvent(){
             if(confirm("정말 탈퇴 하시겠습니까?")){
                 location.href ="../actionPage/deleteInfo.jsp"

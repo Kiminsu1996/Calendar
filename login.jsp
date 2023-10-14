@@ -29,25 +29,20 @@
         </form>
     </main>
     <script>
-        function checkEmpty(){
-            var loginBtn = document.getElementById("loginBtn")
-            loginBtn.addEventListener("click",loginBtnClickEvent)
-        }
-
+        
+        //로그인 시 id와 pw를 DB에 보내주는 함수
         function loginBtnClickEvent(){
             var userId = document.getElementById("userId")
             var userPw = document.getElementById("userPw")
 
             if(userId.value === "" || userPw.value === ""){
                 alert("빈칸 없이 다 적어주세요.")
+            }else{
+                document.getElementById("formShare").submit()
             }
-            
-            document.getElementById("formShare").submit()
+
         } 
 
-        window.onload = function(){
-            checkEmpty()
-        }
     </script>
 </body>
 </html>
